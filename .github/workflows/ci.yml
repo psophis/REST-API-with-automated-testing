@@ -1,36 +1,59 @@
 name: CI Checks
-on: [pull_request, push]
+on: [pull_request]
 
 jobs:
-    checks:
-        runs-on: ubuntu-latest
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-        steps:
-          - uses: actions/checkout@v6
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
 
-          - name: Set up Java
-            uses: actions/setup-java@v4
-            with:
-              distribution: temurin
-              java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
 
-          - name: Set up Gradle
-            uses: gradle/actions/setup-gradle@v6
+      - name: Run Linter
+        run: ./gradlew ktlintCheck
 
-          - name: Build with Gradle
-            run: ./gradlew build
+  build:
+    runs-on: ubuntu-latest
 
-          - name: Run Unit Tests (Controllers)
-            run: ./gradlew test --tests "*ControllerTest"
+    steps:
+      - uses: actions/checkout@v4
 
-          - name: Run Unit Tests (Services)
-            run: ./gradlew test --tests "*ServiceTest"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
 
-          - name: Run Unit Tests (Repositories)
-            run: ./gradlew test --tests "*RepositoryImplTest"
+      - uses: gradle/actions/setup-gradle@v4
 
-          - name: Run Integration Tests
-            run: ./gradlew test --tests "*IntegrationTest"
+      - name: Build with Gradle
+        run: ./gradlew assemble
 
-          - name: Run Linter
-            run: ./gradlew ktlintCheck
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Run Unit Tests (Controllers)
+        run: ./gradlew test --tests "*ControllerTest"
+
+      - name: Run Unit Tests (Services)
+        run: ./gradlew test --tests "*ServiceTest"
+
+      - name: Run Unit Tests (Repositories)
+        run: ./gradlew test --tests "*RepositoryImplTest"
+
+      - name: Run Integration Tests
+        run: ./gradlew test --tests "*IntegrationTest"
