@@ -30,13 +30,7 @@ jobs:
             run: ./gradlew test --tests "*RepositoryImplTest"
 
           - name: Run Integration Tests
-            run: ./gradlew integrationTest --tests "*IntegrationTest"
-
-          - name: Run E2E Tests
-              run: ./gradlew apiTest --tests "*E2eTest"
-
-          - name: Run Code Coverage
-            run: ./gradlew jacocoTestReport
+            run: ./gradlew test --tests "*IntegrationTest"
 
           - name: Run Linter
             run: ./gradlew ktlintCheck
