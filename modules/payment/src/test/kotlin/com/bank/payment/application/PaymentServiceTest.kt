@@ -1,0 +1,214 @@
+package com.bank.payment.application
+
+import com.bank.bankaccount.domain.BankAccount
+import com.bank.bankaccount.domain.BankAccountRepository
+import com.bank.bankaccount.domain.BankAccountType
+import com.bank.payment.domain.Transaction
+import com.bank.payment.domain.TransactionRepository
+import com.bank.payment.domain.TransactionType
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.time.Instant
+import javax.security.auth.login.AccountNotFoundException
+
+class PaymentServiceTest {
+    private lateinit var paymentService: PaymentService
+    private lateinit var transactionRepository: TransactionRepository
+    private lateinit var bankAccountRepository: BankAccountRepository
+
+    @BeforeEach
+    fun setUp() {
+        transactionRepository = mockk()
+        bankAccountRepository = mockk()
+        paymentService = PaymentService(transactionRepository, bankAccountRepository)
+    }
+
+    @Test
+    fun `should transfer money to external account and decrease balance`() {
+        // Arrange
+        val amount = BigDecimal("100.00")
+        val senderAccount = account(id = "sender-account", clientId = "client-a", iban = "DE1234567890")
+
+        every { bankAccountRepository.getBankAccountByIban(senderAccount.iban) } returns senderAccount
+        every { bankAccountRepository.getBankAccountByIban("DE0987654321") } returns null
+        every { transactionRepository.createTransaction(any()) } answers { firstArg() }
+        every {
+            bankAccountRepository.decreaseBankAccountBalance(
+                senderAccount.id,
+                any(),
+                TransactionType.TRANSFER.toString(),
+                amount,
+                any(),
+                any(),
+            )
+        } just runs
+
+        // Act
+        val result = paymentService.transferMoney(senderAccount.iban, "DE0987654321", amount)
+
+        // Assert
+        assertThat(result.accountId).isEqualTo(senderAccount.id)
+        assertThat(result.senderIban).isEqualTo(senderAccount.iban)
+        assertThat(result.recipientIban).isEqualTo("DE0987654321")
+        assertThat(result.type).isEqualTo(TransactionType.TRANSFER)
+
+        verify(exactly = 1) { transactionRepository.createTransaction(result) }
+        verify(exactly = 1) {
+            bankAccountRepository.decreaseBankAccountBalance(
+                senderAccount.id,
+                result.id,
+                TransactionType.TRANSFER.toString(),
+                amount,
+                result.createdAt,
+                any(),
+            )
+        }
+        verify(exactly = 0) {
+            bankAccountRepository.increaseBankAccountBalance(any(), any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `should receive money via bank transfer`() {
+        // Arrange
+        val amount = BigDecimal("100.00")
+        val recipientAccount = account(id = "recipient-account", clientId = "client-b", iban = "DE0987654321")
+
+        every { bankAccountRepository.getBankAccountByIban("DE1234567890") } returns null
+        every { bankAccountRepository.getBankAccountByIban(recipientAccount.iban) } returns recipientAccount
+        every { transactionRepository.createTransaction(any()) } answers { firstArg() }
+        every {
+            bankAccountRepository.increaseBankAccountBalance(
+                recipientAccount.id,
+                any(),
+                TransactionType.TRANSFER.toString(),
+                amount,
+                any(),
+                any(),
+            )
+        } just runs
+
+        // Act
+        val result = paymentService.transferMoney("DE1234567890", recipientAccount.iban, amount)
+
+        // Assert
+        assertThat(result.accountId).isEqualTo(recipientAccount.id)
+        assertThat(result.senderIban).isEqualTo("DE1234567890")
+        assertThat(result.recipientIban).isEqualTo(recipientAccount.iban)
+        assertThat(result.type).isEqualTo(TransactionType.TRANSFER)
+
+        verify(exactly = 1) { transactionRepository.createTransaction(result) }
+        verify(exactly = 1) {
+            bankAccountRepository.increaseBankAccountBalance(
+                recipientAccount.id,
+                result.id,
+                TransactionType.TRANSFER.toString(),
+                amount,
+                result.createdAt,
+                any(),
+            )
+        }
+        verify(exactly = 0) {
+            bankAccountRepository.decreaseBankAccountBalance(any(), any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `should transfer money between bank account with same owner`() {
+        // Arrange
+        val amount = BigDecimal("100.00")
+        val senderAccount = account(id = "sender-account", clientId = "client-a", iban = "DE1234567890")
+        val recipientAccount = account(id = "recipient-account", clientId = "client-a", iban = "DE0987654321")
+        val savedTransactions = mutableListOf<Transaction>()
+
+        every { bankAccountRepository.getBankAccountByIban(senderAccount.iban) } returns senderAccount
+        every { bankAccountRepository.getBankAccountByIban(recipientAccount.iban) } returns recipientAccount
+        every { transactionRepository.createTransaction(capture(savedTransactions)) } answers { firstArg() }
+        every {
+            bankAccountRepository.decreaseBankAccountBalance(
+                senderAccount.id,
+                any(),
+                TransactionType.TRANSFER.toString(),
+                amount,
+                any(),
+                any(),
+            )
+        } just runs
+        every {
+            bankAccountRepository.increaseBankAccountBalance(
+                recipientAccount.id,
+                any(),
+                TransactionType.TRANSFER.toString(),
+                amount,
+                any(),
+                any(),
+            )
+        } just runs
+
+        // Act
+        val result = paymentService.transferMoney(senderAccount.iban, recipientAccount.iban, amount)
+
+        // Assert
+        assertThat(result.accountId).isEqualTo(senderAccount.id)
+        assertThat(savedTransactions).hasSize(2)
+        assertThat(savedTransactions[0].accountId).isEqualTo(senderAccount.id)
+        assertThat(savedTransactions[1].accountId).isEqualTo(recipientAccount.id)
+        assertThat(savedTransactions[0].id).isNotEqualTo(savedTransactions[1].id)
+
+        verify(exactly = 2) { transactionRepository.createTransaction(any()) }
+        verify(exactly = 1) {
+            bankAccountRepository.decreaseBankAccountBalance(
+                senderAccount.id,
+                savedTransactions[0].id,
+                TransactionType.TRANSFER.toString(),
+                amount,
+                savedTransactions[0].createdAt,
+                any(),
+            )
+        }
+        verify(exactly = 1) {
+            bankAccountRepository.increaseBankAccountBalance(
+                recipientAccount.id,
+                savedTransactions[1].id,
+                TransactionType.TRANSFER.toString(),
+                amount,
+                savedTransactions[1].createdAt,
+                any(),
+            )
+        }
+    }
+
+    @Test
+    fun `should throw when no account matches sender or recipient iban`() {
+        // Arrange
+        every { bankAccountRepository.getBankAccountByIban("DE1234567890") } returns null
+        every { bankAccountRepository.getBankAccountByIban("DE0987654321") } returns null
+
+        // Assert
+        assertThatThrownBy {
+            paymentService.transferMoney("DE1234567890", "DE0987654321", BigDecimal("100.00"))
+        }.isInstanceOf(AccountNotFoundException::class.java)
+            .hasMessage("Account not found for IBAN DE1234567890 or DE0987654321")
+    }
+
+    private fun account(
+        id: String,
+        clientId: String,
+        iban: String,
+    ) = BankAccount(
+        id = id,
+        clientId = clientId,
+        iban = iban,
+        balance = BigDecimal("1000.00"),
+        bankAccountType = BankAccountType.CHECKING_ACCOUNT,
+        createdAt = Instant.now(),
+    )
+}
