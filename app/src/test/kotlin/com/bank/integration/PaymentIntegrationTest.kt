@@ -49,7 +49,7 @@ class PaymentIntegrationTest {
         val account =
             bankAccountJpaRepository.save(
                 BankAccountEntity(
-                    id =  UUID.randomUUID().toString(),
+                    id = UUID.randomUUID().toString(),
                     clientId = UUID.randomUUID().toString(),
                     iban = "DE12345678901234567890",
                     balance = BigDecimal.ZERO,
@@ -57,10 +57,11 @@ class PaymentIntegrationTest {
                     createdAt = Instant.now(),
                 ),
             )
-        val depositRequest = DepositRequest(
-            bankAccountId = account.id,
-            amount = BigDecimal("100.00")
-        )
+        val depositRequest =
+            DepositRequest(
+                bankAccountId = account.id,
+                amount = BigDecimal("100.00")
+            )
 
         // Act
         val response = paymentController.depositMoney(depositRequest)
@@ -187,8 +188,6 @@ class PaymentIntegrationTest {
         assertThat(transactions.single().type).isEqualTo(TransactionType.TRANSFER)
         assertThat(transactions.single().recipientIban).isEqualTo(account.iban)
         assertThat(transactions.single().senderIban).isEqualTo("DE0987654321")
-
-
     }
 
     @Test
