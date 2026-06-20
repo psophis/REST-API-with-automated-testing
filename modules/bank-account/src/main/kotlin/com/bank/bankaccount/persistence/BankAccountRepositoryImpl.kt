@@ -62,7 +62,7 @@ class BankAccountRepositoryImpl(
             bankAccountJpaRepository
                 .findById(bankAccountId)
                 .orElseThrow { NoSuchElementException("Account not found: $bankAccountId") }
-        if (entity.balance > amount) {
+        if (entity.balance >= amount) {
             entity.balance -= amount
         } else {
             throw IllegalStateException("Funds must be at least equal to withdrawal amount")
