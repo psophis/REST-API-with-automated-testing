@@ -1,7 +1,6 @@
 package com.bank.bankaccount.domain
 
 import java.math.BigDecimal
-import java.time.Instant
 
 interface BankAccountRepository {
     fun getBankAccountById(bankAccountId: String): BankAccount?
@@ -14,20 +13,12 @@ interface BankAccountRepository {
 
     fun increaseBankAccountBalance(
         bankAccountId: String,
-        transactionId: String,
-        transactionType: String,
         amount: BigDecimal,
-        createdAt: Instant,
-        bookedAt: Instant,
     )
 
     fun decreaseBankAccountBalance(
         bankAccountId: String,
-        transactionId: String,
-        transactionType: String,
         amount: BigDecimal,
-        createdAt: Instant,
-        bookedAt: Instant,
     )
 
     fun deleteByBankAccountId(bankAccountId: String)

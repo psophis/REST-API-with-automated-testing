@@ -5,7 +5,6 @@ import com.bank.bankaccount.domain.BankAccountRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
-import java.time.Instant
 
 @Repository
 class BankAccountRepositoryImpl(
@@ -31,11 +30,7 @@ class BankAccountRepositoryImpl(
     @Transactional
     override fun increaseBankAccountBalance(
         bankAccountId: String,
-        transactionId: String,
-        transactionType: String,
         amount: BigDecimal,
-        createdAt: Instant,
-        bookedAt: Instant,
     ) {
         require(amount > BigDecimal.ZERO) { "Amount must be more than zero" }
 
@@ -50,11 +45,7 @@ class BankAccountRepositoryImpl(
     @Transactional
     override fun decreaseBankAccountBalance(
         bankAccountId: String,
-        transactionId: String,
-        transactionType: String,
         amount: BigDecimal,
-        createdAt: Instant,
-        bookedAt: Instant,
     ) {
         require(amount > BigDecimal.ZERO) { "Amount must be more than zero" }
 

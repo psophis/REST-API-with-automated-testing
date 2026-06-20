@@ -108,11 +108,7 @@ class AccountRepositoryImplTest {
         // Act
         accountRepository.increaseBankAccountBalance(
             bankAccountId = accountId,
-            transactionId = "tx-1",
-            transactionType = "DEPOSIT",
             amount = BigDecimal("50"),
-            createdAt = Instant.now(),
-            bookedAt = Instant.now(),
         )
 
         // Assert
@@ -137,11 +133,7 @@ class AccountRepositoryImplTest {
         // Act
         accountRepository.decreaseBankAccountBalance(
             bankAccountId = accountId,
-            transactionId = "tx-1",
-            transactionType = "WITHDRAWAL",
             amount = BigDecimal("40"),
-            createdAt = Instant.now(),
-            bookedAt = Instant.now(),
         )
 
         // Assert
@@ -177,11 +169,7 @@ class AccountRepositoryImplTest {
         assertThrows(IllegalArgumentException::class.java) {
             accountRepository.increaseBankAccountBalance(
                 bankAccountId = accountId,
-                transactionId = "tx-1",
-                transactionType = "DEPOSIT",
                 amount = BigDecimal("-1"),
-                createdAt = Instant.now(),
-                bookedAt = Instant.now(),
             )
         }
     }

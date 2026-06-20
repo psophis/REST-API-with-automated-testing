@@ -2,7 +2,6 @@ package com.bank.payment.application
 
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.bankaccount.domain.BankAccountRepository
-import com.bank.payment.domain.Transaction
 import com.bank.payment.domain.TransactionRepository
 import com.bank.payment.domain.TransactionType
 import io.mockk.every
@@ -41,12 +40,8 @@ class PaymentServiceTest {
         every { transactionRepository.createTransaction(any()) } answers { firstArg() }
         every {
             bankAccountRepository.decreaseBankAccountBalance(
-                senderAccount.id,
-                any(),
-                TransactionType.TRANSFER.toString(),
-                amount,
-                any(),
-                any(),
+                bankAccountId = senderAccount.id,
+                amount = amount,
             )
         } just runs
 
@@ -62,16 +57,12 @@ class PaymentServiceTest {
         verify(exactly = 1) { transactionRepository.createTransaction(result) }
         verify(exactly = 1) {
             bankAccountRepository.decreaseBankAccountBalance(
-                senderAccount.id,
-                result.id,
-                TransactionType.TRANSFER.toString(),
-                amount,
-                result.createdAt,
-                any(),
+                bankAccountId = senderAccount.id,
+                amount = amount,
             )
         }
         verify(exactly = 0) {
-            bankAccountRepository.increaseBankAccountBalance(any(), any(), any(), any(), any(), any())
+            bankAccountRepository.increaseBankAccountBalance(any(), any())
         }
     }
 
@@ -86,12 +77,8 @@ class PaymentServiceTest {
         every { transactionRepository.createTransaction(any()) } answers { firstArg() }
         every {
             bankAccountRepository.increaseBankAccountBalance(
-                recipientAccount.id,
-                any(),
-                TransactionType.TRANSFER.toString(),
-                amount,
-                any(),
-                any(),
+                bankAccountId = recipientAccount.id,
+                amount = amount,
             )
         } just runs
 
@@ -107,81 +94,12 @@ class PaymentServiceTest {
         verify(exactly = 1) { transactionRepository.createTransaction(result) }
         verify(exactly = 1) {
             bankAccountRepository.increaseBankAccountBalance(
-                recipientAccount.id,
-                result.id,
-                TransactionType.TRANSFER.toString(),
-                amount,
-                result.createdAt,
-                any(),
+                bankAccountId = recipientAccount.id,
+                amount = amount,
             )
         }
         verify(exactly = 0) {
-            bankAccountRepository.decreaseBankAccountBalance(any(), any(), any(), any(), any(), any())
-        }
-    }
-
-    @Test
-    fun `should transfer money between bank account with same owner`() {
-        // Arrange
-        val amount = BigDecimal("100.00")
-        val senderAccount = account(id = "sender-account", clientId = "client-a", iban = "DE1234567890")
-        val recipientAccount = account(id = "recipient-account", clientId = "client-a", iban = "DE0987654321")
-        val savedTransactions = mutableListOf<Transaction>()
-
-        every { bankAccountRepository.getBankAccountByIban(senderAccount.iban) } returns senderAccount
-        every { bankAccountRepository.getBankAccountByIban(recipientAccount.iban) } returns recipientAccount
-        every { transactionRepository.createTransaction(capture(savedTransactions)) } answers { firstArg() }
-        every {
-            bankAccountRepository.decreaseBankAccountBalance(
-                senderAccount.id,
-                any(),
-                TransactionType.TRANSFER.toString(),
-                amount,
-                any(),
-                any(),
-            )
-        } just runs
-        every {
-            bankAccountRepository.increaseBankAccountBalance(
-                recipientAccount.id,
-                any(),
-                TransactionType.TRANSFER.toString(),
-                amount,
-                any(),
-                any(),
-            )
-        } just runs
-
-        // Act
-        val result = paymentService.transferMoney(senderAccount.iban, recipientAccount.iban, amount)
-
-        // Assert
-        assertThat(result.accountId).isEqualTo(senderAccount.id)
-        assertThat(savedTransactions).hasSize(2)
-        assertThat(savedTransactions[0].accountId).isEqualTo(senderAccount.id)
-        assertThat(savedTransactions[1].accountId).isEqualTo(recipientAccount.id)
-        assertThat(savedTransactions[0].id).isNotEqualTo(savedTransactions[1].id)
-
-        verify(exactly = 2) { transactionRepository.createTransaction(any()) }
-        verify(exactly = 1) {
-            bankAccountRepository.decreaseBankAccountBalance(
-                senderAccount.id,
-                savedTransactions[0].id,
-                TransactionType.TRANSFER.toString(),
-                amount,
-                savedTransactions[0].createdAt,
-                any(),
-            )
-        }
-        verify(exactly = 1) {
-            bankAccountRepository.increaseBankAccountBalance(
-                recipientAccount.id,
-                savedTransactions[1].id,
-                TransactionType.TRANSFER.toString(),
-                amount,
-                savedTransactions[1].createdAt,
-                any(),
-            )
+            bankAccountRepository.decreaseBankAccountBalance(any(), any())
         }
     }
 

@@ -39,15 +39,10 @@ class PaymentService(
             )
         transactionRepository.createTransaction(transaction)
 
-        val bookedAt = Instant.now()
         if (senderAccount != null) {
             bankAccountRepository.decreaseBankAccountBalance(
-                senderAccount.id,
-                transaction.id,
-                TransactionType.TRANSFER.toString(),
-                amount,
-                transaction.createdAt,
-                bookedAt,
+                bankAccountId = senderAccount.id,
+                amount = amount,
             )
         } else {
             val localRecipient =
@@ -55,12 +50,8 @@ class PaymentService(
                     ?: throw AccountNotFoundException("Account not found for IBAN $fromIban or $toIban")
 
             bankAccountRepository.increaseBankAccountBalance(
-                localRecipient.id,
-                transaction.id,
-                TransactionType.TRANSFER.toString(),
-                amount,
-                transaction.createdAt,
-                bookedAt,
+                bankAccountId = localRecipient.id,
+                amount = amount,
             )
         }
         return transaction
@@ -86,14 +77,9 @@ class PaymentService(
 
         try {
             transactionRepository.createTransaction(transaction)
-            val bookedAt = Instant.now()
             bankAccountRepository.decreaseBankAccountBalance(
-                transaction.accountId,
-                transaction.id,
-                TransactionType.WITHDRAWAL.toString(),
-                transaction.amount,
-                transaction.createdAt,
-                bookedAt,
+                bankAccountId = transaction.accountId,
+                amount = transaction.amount,
             )
         } catch (e: Exception) {
             throw RuntimeException("Error withdrawing money", e)
@@ -121,14 +107,9 @@ class PaymentService(
 
         try {
             transactionRepository.createTransaction(transaction)
-            val bookedAt = Instant.now()
             bankAccountRepository.increaseBankAccountBalance(
-                transaction.accountId,
-                transaction.id,
-                TransactionType.DEPOSIT.toString(),
-                transaction.amount,
-                transaction.createdAt,
-                bookedAt,
+                bankAccountId = transaction.accountId,
+                amount = transaction.amount,
             )
         } catch (e: Exception) {
             throw RuntimeException("Error depositing money", e)
