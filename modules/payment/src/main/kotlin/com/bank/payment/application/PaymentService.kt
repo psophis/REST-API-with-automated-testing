@@ -124,7 +124,7 @@ class PaymentService(
             val bookedAt = Instant.now()
             bankAccountRepository.increaseBankAccountBalance(
                 transaction.accountId,
-                generateTransactionId(),
+                transaction.id,
                 TransactionType.DEPOSIT.toString(),
                 transaction.amount,
                 transaction.createdAt,
