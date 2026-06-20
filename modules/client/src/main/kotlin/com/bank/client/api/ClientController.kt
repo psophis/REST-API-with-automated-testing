@@ -1,7 +1,9 @@
 package com.bank.client.api
 
-import com.bank.bankaccount.api.BankAccountDto
+import com.bank.bankaccount.domain.BankAccountType
 import com.bank.client.application.ClientService
+import com.bank.client.application.CreateClientCommand
+import com.bank.client.application.UpdateClientCommand
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
+import java.time.Instant
 
 @RestController
 @RequestMapping("/api/clients")
@@ -46,12 +50,12 @@ class ClientController(
     @GetMapping("/{clientId}/accounts")
     fun getClientAccounts(
         @PathVariable clientId: String,
-    ): ResponseEntity<List<BankAccountDto>> {
+    ): ResponseEntity<List<ClientAccountResponse>> {
         try {
             val accounts = clientService.getClientAccounts(clientId)
             return ResponseEntity.ok(
                 accounts.map {
-                    BankAccountDto(
+                    ClientAccountResponse(
                         id = it.id,
                         clientId = it.clientId,
                         iban = it.iban,
@@ -75,7 +79,12 @@ class ClientController(
         @RequestBody client: ClientCreationRequest,
     ): ResponseEntity<ClientUpdateRequest> {
         try {
-            val createdClient = clientService.createClient(client)
+            val createdClient = clientService.createClient(
+                CreateClientCommand(
+                    name = client.name,
+                    address = client.address,
+                )
+            )
             return ResponseEntity.status(HttpStatus.OK).body(
                 ClientUpdateRequest(
                     id = createdClient.id,
@@ -91,10 +100,16 @@ class ClientController(
 
     @PutMapping
     fun updateClient(
-        @RequestBody clientDto: ClientUpdateRequest,
+        @RequestBody client: ClientUpdateRequest,
     ): ResponseEntity<ClientUpdateRequest> {
         try {
-            val updatedClient = clientService.updateClient(clientDto)
+            val updatedClient = clientService.updateClient(
+                UpdateClientCommand(
+                    id = client.id,
+                    name = client.name,
+                    address = client.address,
+                )
+            )
 
             return ResponseEntity.status(HttpStatus.OK).body(
                 ClientUpdateRequest(
@@ -122,3 +137,12 @@ class ClientController(
         }
     }
 }
+
+data class ClientAccountResponse(
+    val id: String,
+    val clientId: String,
+    val iban: String,
+    val balance: BigDecimal,
+    val bankAccountType: BankAccountType,
+    val createdAt: Instant,
+)

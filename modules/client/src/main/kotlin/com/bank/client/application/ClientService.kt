@@ -4,8 +4,6 @@ import com.bank.bankaccount.application.BankAccountService
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.bankaccount.domain.BankAccountRepository
 import com.bank.bankaccount.domain.BankAccountType
-import com.bank.client.api.ClientCreationRequest
-import com.bank.client.api.ClientUpdateRequest
 import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
 import com.bank.client.domain.ClientName
@@ -28,21 +26,21 @@ class ClientService(
     }
 
     @Transactional
-    fun createClient(clientRequest: ClientCreationRequest): Client {
+    fun createClient(command: CreateClientCommand): Client {
         val client =
             Client(
                 id = UUID.randomUUID().toString(),
                 name =
                     ClientName(
-                        name = clientRequest.name.name,
-                        firstName = clientRequest.name.firstName,
+                        name = command.name.name,
+                        firstName = command.name.firstName,
                     ),
                 address =
                     ClientAddress(
-                        street = clientRequest.address.street,
-                        number = clientRequest.address.number,
-                        zipCode = clientRequest.address.zipCode,
-                        city = clientRequest.address.city,
+                        street = command.address.street,
+                        number = command.address.number,
+                        zipCode = command.address.zipCode,
+                        city = command.address.city,
                     ),
             )
 
@@ -56,21 +54,21 @@ class ClientService(
     }
 
     @Transactional
-    fun updateClient(clientUpdateRequest: ClientUpdateRequest): Client {
+    fun updateClient(command: UpdateClientCommand): Client {
         val client =
             Client(
-                id = clientUpdateRequest.id,
+                id = command.id,
                 name =
                     ClientName(
-                        name = clientUpdateRequest.name.name,
-                        firstName = clientUpdateRequest.name.firstName,
+                        name = command.name.name,
+                        firstName = command.name.firstName,
                     ),
                 address =
                     ClientAddress(
-                        street = clientUpdateRequest.address.street,
-                        number = clientUpdateRequest.address.number,
-                        zipCode = clientUpdateRequest.address.zipCode,
-                        city = clientUpdateRequest.address.city,
+                        street = command.address.street,
+                        number = command.address.number,
+                        zipCode = command.address.zipCode,
+                        city = command.address.city,
                     ),
             )
         return clientRepository.updateClient(client)
