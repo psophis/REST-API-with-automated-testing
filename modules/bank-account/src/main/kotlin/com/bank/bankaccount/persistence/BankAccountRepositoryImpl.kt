@@ -85,7 +85,6 @@ private fun BankAccountEntity.toDomain(): BankAccount =
         clientId = clientId,
         iban = iban,
         balance = balance,
-        bankAccountType = bankAccountType,
         createdAt = createdAt,
     )
 
@@ -95,6 +94,5 @@ private fun BankAccount.toEntity(): BankAccountEntity =
         clientId = clientId,
         iban = iban,
         balance = balance,
-        bankAccountType = bankAccountType,
         createdAt = createdAt,
     )
