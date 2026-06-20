@@ -147,7 +147,7 @@ class PaymentIntegrationTest {
         assertThat(transactions.single().amount).isEqualByComparingTo("50.00")
         assertThat(transactions.single().type).isEqualTo(TransactionType.TRANSFER)
         assertThat(transactions.single().senderIban).isEqualTo(account.iban)
-        assertThat(transactions.single().senderIban).isEqualTo("DE0987654321")
+        assertThat(transactions.single().recipientIban).isEqualTo("DE0987654321")
     }
 
     @Test
