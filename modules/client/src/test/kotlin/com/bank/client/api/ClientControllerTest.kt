@@ -2,6 +2,8 @@ package com.bank.client.api
 
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.client.application.ClientService
+import com.bank.client.application.CreateClientCommand
+import com.bank.client.application.UpdateClientCommand
 import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
 import com.bank.client.domain.ClientName
@@ -87,9 +89,14 @@ class ClientControllerTest {
     @Test
     fun `should create client`() {
         // Arrange
-        val request = clientDto(id = "request-id")
+        val request = clientCreationRequest()
+        val command =
+            CreateClientCommand(
+                name = request.name,
+                address = request.address,
+            )
         val createdClient = client(id = "created-id")
-        every { clientService.createClient(request) } returns createdClient
+        every { clientService.createClient(command) } returns createdClient
 
         // Act
         val response = clientController.createClient(request)
@@ -99,15 +106,21 @@ class ClientControllerTest {
         assertThat(response.body!!.id).isEqualTo(createdClient.id)
         assertThat(response.body!!.name).isEqualTo(createdClient.name)
         assertThat(response.body!!.address).isEqualTo(createdClient.address)
-        verify(exactly = 1) { clientService.createClient(request) }
+        verify(exactly = 1) { clientService.createClient(command) }
     }
 
     @Test
     fun `should update client`() {
         // Arrange
-        val request = clientDto(id = "client-id")
+        val request = clientUpdateRequest(id = "client-id")
+        val command =
+            UpdateClientCommand(
+                id = request.id,
+                name = request.name,
+                address = request.address,
+            )
         val updatedClient = client(id = request.id)
-        every { clientService.updateClient(request) } returns updatedClient
+        every { clientService.updateClient(command) } returns updatedClient
 
         // Act
         val response = clientController.updateClient(request)
@@ -117,7 +130,7 @@ class ClientControllerTest {
         assertThat(response.body!!.id).isEqualTo(updatedClient.id)
         assertThat(response.body!!.name).isEqualTo(updatedClient.name)
         assertThat(response.body!!.address).isEqualTo(updatedClient.address)
-        verify(exactly = 1) { clientService.updateClient(request) }
+        verify(exactly = 1) { clientService.updateClient(command) }
     }
 
     @Test
@@ -165,21 +178,31 @@ class ClientControllerTest {
                 ),
         )
 
-    private fun clientDto(id: String = "client-id") =
+    private fun clientCreationRequest() =
+        ClientCreationRequest(
+            name = clientName(),
+            address = clientAddress(),
+        )
+
+    private fun clientUpdateRequest(id: String = "client-id") =
         ClientUpdateRequest(
             id = id,
-            name =
-                ClientName(
-                    name = "Doe",
-                    firstName = "Jane",
-                ),
-            address =
-                ClientAddress(
-                    street = "Main Street",
-                    number = "1",
-                    zipCode = "12345",
-                    city = "Berlin",
-                ),
+            name = clientName(),
+            address = clientAddress(),
+        )
+
+    private fun clientName() =
+        ClientName(
+            name = "Doe",
+            firstName = "Jane",
+        )
+
+    private fun clientAddress() =
+        ClientAddress(
+            street = "Main Street",
+            number = "1",
+            zipCode = "12345",
+            city = "Berlin",
         )
 
     private fun account(clientId: String) =

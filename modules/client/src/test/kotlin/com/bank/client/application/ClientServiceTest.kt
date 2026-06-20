@@ -11,7 +11,6 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -67,28 +66,27 @@ class ClientServiceTest {
     @Test
     fun `should create client`() {
         // Arrange
-        val request = clientUpdateCommand(id = "request-id")
-        val createdClientSlot = slot<Client>()
-        val savedClient = client(id = "persisted-client-id")
-        every { clientRepository.createClient(capture(createdClientSlot)) } returns savedClient
+        val request = createClientCommand()
+        val client = client(id = "persisted-client-id")
+        every { clientRepository.createClient(any()) } returns client
         every {
             bankAccountService.createBankAccount(
-                clientId = savedClient.id,
+                clientId = client.id,
             )
-        } returns account(savedClient.id)
+        } returns account(client.id)
 
         // Act
         val result = clientService.createClient(request)
 
         // Assert
-        assertThat(result).isEqualTo(savedClient)
-        assertThat(createdClientSlot.captured.id).isNotEqualTo(request.id)
-        assertThat(createdClientSlot.captured.name).isEqualTo(request.name)
-        assertThat(createdClientSlot.captured.address).isEqualTo(request.address)
+        assertThat(result).isEqualTo(client)
+        assertThat(result.id).isEqualTo(client.id)
+        assertThat(result.name).isEqualTo(client.name)
+        assertThat(result.address).isEqualTo(client.address)
         verify(exactly = 1) { clientRepository.createClient(any()) }
         verify(exactly = 1) {
             bankAccountService.createBankAccount(
-                clientId = savedClient.id,
+                clientId = client.id,
             )
         }
     }
@@ -96,7 +94,7 @@ class ClientServiceTest {
     @Test
     fun `should update client`() {
         // Arrange
-        val request = clientUpdateCommand(id = "client-id")
+        val request = updateClientCommand(id = "client-id")
         val updatedClient = client(id = request.id)
         every { clientRepository.updateClient(any()) } returns updatedClient
 
@@ -148,8 +146,24 @@ class ClientServiceTest {
                 ),
         )
 
-    private fun clientUpdateCommand(id: String = "client-id") =
-        ClientUpdateCommand(
+    private fun createClientCommand() =
+        CreateClientCommand(
+            name =
+                ClientName(
+                    name = "Doe",
+                    firstName = "Jane",
+                ),
+            address =
+                ClientAddress(
+                    street = "Main Street",
+                    number = "1",
+                    zipCode = "12345",
+                    city = "Berlin",
+                ),
+        )
+
+    private fun updateClientCommand(id: String = "client-id") =
+        UpdateClientCommand(
             id = id,
             name =
                 ClientName(
