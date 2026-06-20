@@ -28,88 +28,42 @@ class PaymentService(
             throw AccountNotFoundException("Account not found for IBAN $fromIban or $toIban")
         }
 
-        val isInternalTransfer =
-            senderAccount != null &&
-                recipientAccount != null &&
-                senderAccount.clientId == recipientAccount.clientId
+        val localAccount = senderAccount ?: recipientAccount!!
+        val transaction =
+            createTransaction(
+                localAccount.id,
+                fromIban,
+                toIban,
+                amount,
+                TransactionType.TRANSFER,
+            )
+        transactionRepository.createTransaction(transaction)
 
-        return if (isInternalTransfer) {
-            val senderTransaction =
-                createTransaction(
-                    senderAccount.id,
-                    fromIban,
-                    toIban,
-                    amount,
-                    TransactionType.TRANSFER,
-                )
-            val recipientTransaction =
-                createTransaction(
-                    recipientAccount.id,
-                    fromIban,
-                    toIban,
-                    amount,
-                    TransactionType.TRANSFER,
-                )
-
-            transactionRepository.createTransaction(senderTransaction)
-            transactionRepository.createTransaction(recipientTransaction)
-
-            val bookedAt = Instant.now()
+        val bookedAt = Instant.now()
+        if (senderAccount != null) {
             bankAccountRepository.decreaseBankAccountBalance(
                 senderAccount.id,
-                senderTransaction.id,
+                transaction.id,
                 TransactionType.TRANSFER.toString(),
                 amount,
-                senderTransaction.createdAt,
+                transaction.createdAt,
                 bookedAt,
             )
-            bankAccountRepository.increaseBankAccountBalance(
-                recipientAccount.id,
-                recipientTransaction.id,
-                TransactionType.TRANSFER.toString(),
-                amount,
-                recipientTransaction.createdAt,
-                bookedAt,
-            )
-            senderTransaction
         } else {
-            val localAccount = senderAccount ?: recipientAccount!!
-            val transaction =
-                createTransaction(
-                    localAccount.id,
-                    fromIban,
-                    toIban,
-                    amount,
-                    TransactionType.TRANSFER,
-                )
-            transactionRepository.createTransaction(transaction)
+            val localRecipient =
+                recipientAccount
+                    ?: throw AccountNotFoundException("Account not found for IBAN $fromIban or $toIban")
 
-            val bookedAt = Instant.now()
-            if (senderAccount != null) {
-                bankAccountRepository.decreaseBankAccountBalance(
-                    senderAccount.id,
-                    transaction.id,
-                    TransactionType.TRANSFER.toString(),
-                    amount,
-                    transaction.createdAt,
-                    bookedAt,
-                )
-            } else {
-                val localRecipient =
-                    recipientAccount
-                        ?: throw AccountNotFoundException("Account not found for IBAN $fromIban or $toIban")
-
-                bankAccountRepository.increaseBankAccountBalance(
-                    localRecipient.id,
-                    transaction.id,
-                    TransactionType.TRANSFER.toString(),
-                    amount,
-                    transaction.createdAt,
-                    bookedAt,
-                )
-            }
-            transaction
+            bankAccountRepository.increaseBankAccountBalance(
+                localRecipient.id,
+                transaction.id,
+                TransactionType.TRANSFER.toString(),
+                amount,
+                transaction.createdAt,
+                bookedAt,
+            )
         }
+        return transaction
     }
 
     @Transactional
