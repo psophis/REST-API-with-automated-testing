@@ -2,7 +2,6 @@ package com.bank.payment.application
 
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.bankaccount.domain.BankAccountRepository
-import com.bank.bankaccount.domain.BankAccountType
 import com.bank.payment.domain.Transaction
 import com.bank.payment.domain.TransactionRepository
 import com.bank.payment.domain.TransactionType
@@ -208,7 +207,6 @@ class PaymentServiceTest {
         clientId = clientId,
         iban = iban,
         balance = BigDecimal("1000.00"),
-        bankAccountType = BankAccountType.CHECKING_ACCOUNT,
         createdAt = Instant.now(),
     )
 }

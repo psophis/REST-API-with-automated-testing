@@ -8,6 +8,5 @@ data class BankAccount(
     val clientId: String,
     val iban: String,
     val balance: BigDecimal,
-    val bankAccountType: BankAccountType,
     val createdAt: Instant,
 )

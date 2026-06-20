@@ -3,10 +3,9 @@ package com.bank.client.application
 import com.bank.bankaccount.application.BankAccountService
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.bankaccount.domain.BankAccountRepository
-import com.bank.bankaccount.domain.BankAccountType
-import com.bank.client.api.ClientUpdateRequest
 import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
+import com.bank.client.domain.ClientName
 import com.bank.client.domain.ClientRepository
 import io.mockk.every
 import io.mockk.just
@@ -68,14 +67,13 @@ class ClientServiceTest {
     @Test
     fun `should create client`() {
         // Arrange
-        val request = clientDto(id = "request-id")
+        val request = clientUpdateCommand(id = "request-id")
         val createdClientSlot = slot<Client>()
         val savedClient = client(id = "persisted-client-id")
         every { clientRepository.createClient(capture(createdClientSlot)) } returns savedClient
         every {
             bankAccountService.createBankAccount(
                 clientId = savedClient.id,
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
             )
         } returns account(savedClient.id)
 
@@ -91,7 +89,6 @@ class ClientServiceTest {
         verify(exactly = 1) {
             bankAccountService.createBankAccount(
                 clientId = savedClient.id,
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
             )
         }
     }
@@ -99,7 +96,7 @@ class ClientServiceTest {
     @Test
     fun `should update client`() {
         // Arrange
-        val request = clientDto(id = "client-id")
+        val request = clientUpdateCommand(id = "client-id")
         val updatedClient = client(id = request.id)
         every { clientRepository.updateClient(any()) } returns updatedClient
 
@@ -139,7 +136,7 @@ class ClientServiceTest {
             id = id,
             name =
                 ClientName(
-                    surname = "Doe",
+                    name = "Doe",
                     firstName = "Jane",
                 ),
             address =
@@ -151,12 +148,12 @@ class ClientServiceTest {
                 ),
         )
 
-    private fun clientDto(id: String = "client-id") =
-        ClientUpdateRequest(
+    private fun clientUpdateCommand(id: String = "client-id") =
+        ClientUpdateCommand(
             id = id,
             name =
                 ClientName(
-                    surname = "Doe",
+                    name = "Doe",
                     firstName = "Jane",
                 ),
             address =
@@ -174,7 +171,6 @@ class ClientServiceTest {
             clientId = clientId,
             iban = "DE1234567890",
             balance = BigDecimal("100.00"),
-            bankAccountType = BankAccountType.CHECKING_ACCOUNT,
             createdAt = Instant.now(),
         )
 }

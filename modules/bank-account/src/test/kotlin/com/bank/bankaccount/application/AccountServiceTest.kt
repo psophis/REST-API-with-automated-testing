@@ -2,7 +2,6 @@ package com.bank.bankaccount.application
 
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.bankaccount.domain.BankAccountRepository
-import com.bank.bankaccount.domain.BankAccountType
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -37,7 +36,6 @@ class AccountServiceTest {
                 clientId = "client-1",
                 iban = "DE1234567890",
                 balance = BigDecimal.ZERO,
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
                 createdAt = Instant.now(),
             )
 
@@ -66,7 +64,6 @@ class AccountServiceTest {
     fun `should create new account`() {
         // Arrange
         val clientId = "client-id"
-        val bankAccountType = BankAccountType.CHECKING_ACCOUNT
         val iban = "DE1234567890"
 
         every { ibanGenerator.generateIban() } returns iban
@@ -76,12 +73,10 @@ class AccountServiceTest {
         val result =
             bankAccountService.createBankAccount(
                 clientId = clientId,
-                bankAccountType = bankAccountType,
             )
 
         // Assert
         assertEquals(clientId, result.clientId)
-        assertEquals(bankAccountType, result.bankAccountType)
         assertEquals(iban, result.iban)
         assertEquals(BigDecimal.ZERO, result.balance)
         verify(exactly = 1) { ibanGenerator.generateIban() }
@@ -98,7 +93,6 @@ class AccountServiceTest {
         assertThrows(RuntimeException::class.java) {
             bankAccountService.createBankAccount(
                 clientId = "client-id",
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
             )
         }
     }

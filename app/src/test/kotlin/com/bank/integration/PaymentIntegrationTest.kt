@@ -1,7 +1,6 @@
 package com.bank.integration
 
 import com.bank.BankingBackendApplication
-import com.bank.bankaccount.domain.BankAccountType
 import com.bank.bankaccount.persistence.BankAccountEntity
 import com.bank.bankaccount.persistence.BankAccountJpaRepository
 import com.bank.payment.api.BankTransferRequest
@@ -53,7 +52,6 @@ class PaymentIntegrationTest {
                     clientId = UUID.randomUUID().toString(),
                     iban = "DE12345678901234567890",
                     balance = BigDecimal.ZERO,
-                    bankAccountType = BankAccountType.SAVINGS_ACCOUNT,
                     createdAt = Instant.now(),
                 ),
             )
@@ -90,7 +88,6 @@ class PaymentIntegrationTest {
                     clientId = UUID.randomUUID().toString(),
                     iban = "DE12345678901234567890",
                     balance = BigDecimal("100.00"),
-                    bankAccountType = BankAccountType.SAVINGS_ACCOUNT,
                     createdAt = Instant.now(),
                 ),
             )
@@ -126,7 +123,6 @@ class PaymentIntegrationTest {
                     clientId = UUID.randomUUID().toString(),
                     iban = "DE12345678901234567890",
                     balance = BigDecimal("100.00"),
-                    bankAccountType = BankAccountType.SAVINGS_ACCOUNT,
                     createdAt = Instant.now(),
                 ),
             )
@@ -164,7 +160,6 @@ class PaymentIntegrationTest {
                     clientId = UUID.randomUUID().toString(),
                     iban = "DE12345678901234567890",
                     balance = BigDecimal("100.00"),
-                    bankAccountType = BankAccountType.SAVINGS_ACCOUNT,
                     createdAt = Instant.now(),
                 ),
             )

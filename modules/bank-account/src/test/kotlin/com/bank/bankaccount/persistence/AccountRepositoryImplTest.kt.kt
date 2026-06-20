@@ -1,7 +1,6 @@
 package com.bank.bankaccount.persistence
 
 import com.bank.bankaccount.domain.BankAccount
-import com.bank.bankaccount.domain.BankAccountType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -48,7 +47,6 @@ class AccountRepositoryImplTest {
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal.ZERO,
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
                 createdAt = Instant.now(),
             )
         accountRepository.createBankAccount(bankAccount)
@@ -71,7 +69,6 @@ class AccountRepositoryImplTest {
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal.ZERO,
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
                 createdAt = Instant.now(),
             )
 
@@ -103,7 +100,6 @@ class AccountRepositoryImplTest {
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal("100"),
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
                 createdAt = Instant.now(),
             )
 
@@ -133,7 +129,6 @@ class AccountRepositoryImplTest {
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal("100"),
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
                 createdAt = Instant.now(),
             )
 
@@ -163,7 +158,6 @@ class AccountRepositoryImplTest {
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal.ZERO,
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
                 createdAt = Instant.now(),
             )
 

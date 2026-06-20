@@ -1,10 +1,10 @@
 package com.bank.client.api
 
 import com.bank.bankaccount.domain.BankAccount
-import com.bank.bankaccount.domain.BankAccountType
 import com.bank.client.application.ClientService
 import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
+import com.bank.client.domain.ClientName
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -153,7 +153,7 @@ class ClientControllerTest {
             id = id,
             name =
                 ClientName(
-                    surname = "Doe",
+                    name = "Doe",
                     firstName = "Jane",
                 ),
             address =
@@ -170,7 +170,7 @@ class ClientControllerTest {
             id = id,
             name =
                 ClientName(
-                    surname = "Doe",
+                    name = "Doe",
                     firstName = "Jane",
                 ),
             address =
@@ -188,7 +188,6 @@ class ClientControllerTest {
             clientId = clientId,
             iban = "DE1234567890",
             balance = BigDecimal("100.00"),
-            bankAccountType = BankAccountType.CHECKING_ACCOUNT,
             createdAt = Instant.now(),
         )
 }

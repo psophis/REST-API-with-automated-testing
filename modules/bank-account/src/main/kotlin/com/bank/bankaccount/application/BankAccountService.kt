@@ -2,7 +2,6 @@ package com.bank.bankaccount.application
 
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.bankaccount.domain.BankAccountRepository
-import com.bank.bankaccount.domain.BankAccountType
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.Instant
@@ -25,7 +24,6 @@ class BankAccountService(
 
     fun createBankAccount(
         clientId: String,
-        bankAccountType: BankAccountType,
     ): BankAccount {
         try {
             val bankAccount =
@@ -34,7 +32,6 @@ class BankAccountService(
                     clientId = clientId,
                     iban = ibanGenerator.generateIban(),
                     balance = BigDecimal.ZERO,
-                    bankAccountType = bankAccountType,
                     createdAt = Instant.now(),
                 )
             return bankAccountRepository.createBankAccount(bankAccount)

@@ -3,7 +3,6 @@ package com.bank.client.application
 import com.bank.bankaccount.application.BankAccountService
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.bankaccount.domain.BankAccountRepository
-import com.bank.bankaccount.domain.BankAccountType
 import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
 import com.bank.client.domain.ClientName
@@ -47,7 +46,6 @@ class ClientService(
         val createdClient = clientRepository.createClient(client)
         bankAccountService.createBankAccount(
             clientId = createdClient.id,
-            bankAccountType = BankAccountType.CHECKING_ACCOUNT,
         )
 
         return createdClient

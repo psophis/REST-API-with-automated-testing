@@ -2,7 +2,6 @@ package com.bank.bankaccount.api
 
 import com.bank.bankaccount.application.BankAccountService
 import com.bank.bankaccount.createAccount
-import com.bank.bankaccount.domain.BankAccountType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -21,7 +20,6 @@ class AccountControllerTest {
         val account =
             createAccount(
                 balance = BigDecimal("100.00"),
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
             )
 
         every { bankAccountService.getBankAccount(account.id) } returns account
@@ -60,13 +58,11 @@ class AccountControllerTest {
         val request =
             BankAccountRequest(
                 clientId = "client-id",
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
             )
 
         val account =
             createAccount(
                 balance = BigDecimal("100.00"),
-                bankAccountType = BankAccountType.CHECKING_ACCOUNT,
             ).copy(
                 clientId = "client-id",
             )
@@ -74,7 +70,6 @@ class AccountControllerTest {
         every {
             bankAccountService.createBankAccount(
                 request.clientId,
-                request.bankAccountType,
             )
         } returns account
 
@@ -90,7 +85,6 @@ class AccountControllerTest {
         verify(exactly = 1) {
             bankAccountService.createBankAccount(
                 request.clientId,
-                request.bankAccountType,
             )
         }
     }

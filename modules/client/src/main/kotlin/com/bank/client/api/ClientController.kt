@@ -1,6 +1,5 @@
 package com.bank.client.api
 
-import com.bank.bankaccount.domain.BankAccountType
 import com.bank.client.application.ClientService
 import com.bank.client.application.CreateClientCommand
 import com.bank.client.application.UpdateClientCommand
@@ -60,7 +59,6 @@ class ClientController(
                         clientId = it.clientId,
                         iban = it.iban,
                         balance = it.balance,
-                        bankAccountType = it.bankAccountType,
                         createdAt = it.createdAt,
                     )
                 },
@@ -143,6 +141,5 @@ data class ClientAccountResponse(
     val clientId: String,
     val iban: String,
     val balance: BigDecimal,
-    val bankAccountType: BankAccountType,
     val createdAt: Instant,
 )

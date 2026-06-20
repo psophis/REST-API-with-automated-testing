@@ -31,7 +31,6 @@ class BankAccountController(
                     clientId = bankAccount.clientId,
                     iban = bankAccount.iban,
                     balance = bankAccount.balance,
-                    bankAccountType = bankAccount.bankAccountType,
                     createdAt = bankAccount.createdAt,
                 ),
             )
@@ -48,7 +47,6 @@ class BankAccountController(
         val bankAccount =
             bankAccountService.createBankAccount(
                 request.clientId,
-                request.bankAccountType,
             )
         return ResponseEntity.status(HttpStatus.CREATED).body(
             BankAccountDto(
@@ -56,7 +54,6 @@ class BankAccountController(
                 clientId = bankAccount.clientId,
                 iban = bankAccount.iban,
                 balance = bankAccount.balance,
-                bankAccountType = bankAccount.bankAccountType,
                 createdAt = bankAccount.createdAt,
             ),
         )
