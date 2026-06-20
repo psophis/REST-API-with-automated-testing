@@ -2,6 +2,7 @@ package com.bank.client.persistence
 
 import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
+import com.bank.client.domain.ClientName
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -131,7 +132,7 @@ class ClientRepositoryImplTest {
             id = id,
             name =
                 ClientName(
-                    surname = "Doe",
+                    name = "Doe",
                     firstName = "Jane",
                 ),
             address =
@@ -146,7 +147,7 @@ class ClientRepositoryImplTest {
     private fun entity(client: Client) =
         ClientEntity(
             id = client.id,
-            lastName = client.name.surname,
+            lastName = client.name.name,
             firstName = client.name.firstName,
             street = client.address.street,
             number = client.address.number,
