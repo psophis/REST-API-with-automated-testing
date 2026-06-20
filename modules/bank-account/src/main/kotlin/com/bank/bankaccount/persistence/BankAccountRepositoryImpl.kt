@@ -37,7 +37,7 @@ class BankAccountRepositoryImpl(
         createdAt: Instant,
         bookedAt: Instant,
     ) {
-        require(amount >= BigDecimal.ZERO) { "Amount must be non-negative" }
+        require(amount > BigDecimal.ZERO) { "Amount must be more than zero" }
 
         val entity =
             bankAccountJpaRepository
@@ -56,13 +56,17 @@ class BankAccountRepositoryImpl(
         createdAt: Instant,
         bookedAt: Instant,
     ) {
-        require(amount >= BigDecimal.ZERO) { "Amount must be non-negative" }
+        require(amount > BigDecimal.ZERO) { "Amount must be more than zero" }
 
         val entity =
             bankAccountJpaRepository
                 .findById(bankAccountId)
                 .orElseThrow { NoSuchElementException("Account not found: $bankAccountId") }
-        entity.balance -= amount
+        if (entity.balance > amount) {
+            entity.balance -= amount
+        } else {
+            throw IllegalStateException("Funds must be at least equal to withdrawal amount")
+        }
         bankAccountJpaRepository.save(entity)
     }
 
