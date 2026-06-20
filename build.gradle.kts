@@ -38,7 +38,6 @@ subprojects {
             add("implementation", platform("org.springframework.boot:spring-boot-dependencies:4.0.6"))
             add("testImplementation", platform("org.springframework.boot:spring-boot-dependencies:4.0.6"))
 
-            add("implementation", "org.springframework.boot:spring-boot-starter-webmvc")
             add("implementation", "org.jetbrains.kotlin:kotlin-reflect")
             add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
         }
