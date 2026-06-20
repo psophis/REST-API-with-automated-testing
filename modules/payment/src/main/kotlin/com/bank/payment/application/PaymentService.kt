@@ -4,8 +4,8 @@ import com.bank.bankaccount.domain.BankAccountRepository
 import com.bank.payment.domain.Transaction
 import com.bank.payment.domain.TransactionRepository
 import com.bank.payment.domain.TransactionType
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -146,6 +146,7 @@ class PaymentService(
         }
     }
 
+    @Transactional
     fun depositMoney(
         accountId: String,
         amount: BigDecimal,
