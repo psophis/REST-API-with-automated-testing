@@ -41,7 +41,6 @@ class PaymentControllerTest {
                 senderIban = fromIban,
                 recipientIban = toIban,
                 amount = amount,
-                bankAccountId = accountId,
             )
 
         every {
@@ -84,7 +83,6 @@ class PaymentControllerTest {
             )
         val bankTransferRequest =
             BankTransferRequest(
-                bankAccountId = accountId,
                 amount = amount,
                 senderIban = fromIban,
                 recipientIban = toIban,
@@ -114,7 +112,6 @@ class PaymentControllerTest {
         val amount = BigDecimal("100.00")
         val bankTransferRequest =
             BankTransferRequest(
-                "account-id",
                 amount,
                 fromIban,
                 toIban,
@@ -140,7 +137,6 @@ class PaymentControllerTest {
         val amount = BigDecimal("100.00")
         val bankTransferRequest =
             BankTransferRequest(
-                "account-id",
                 amount,
                 toIban,
                 fromIban,
