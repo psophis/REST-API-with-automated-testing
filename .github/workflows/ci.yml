@@ -48,7 +48,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Run Unit Tests (Controllers)
-        run: ./gradlew test --tests "*ControllerTest"
+        run: >
+          ./gradlew
+          :modules:bank-account:test
+          :modules:client:test
+          :modules:payment:test
+          --tests "*ControllerTest"
 
       - name: Run Unit Tests (Services)
         run: ./gradlew test --tests "*ServiceTest"
