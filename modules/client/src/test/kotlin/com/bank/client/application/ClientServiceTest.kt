@@ -35,7 +35,7 @@ class ClientServiceTest {
     @Test
     fun `should get client`() {
         // Arrange
-        val client = client()
+        val client = client("client-id")
         every { clientRepository.getClientById(client.id) } returns client
 
         // Act
@@ -49,7 +49,7 @@ class ClientServiceTest {
     @Test
     fun `should get client accounts`() {
         // Arrange
-        val client = client()
+        val client = client("client-id")
         val accounts = listOf(account(client.id))
         every { clientRepository.getClientById(client.id) } returns client
         every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns accounts
@@ -95,23 +95,23 @@ class ClientServiceTest {
     fun `should update client`() {
         // Arrange
         val request = updateClientCommand(id = "client-id")
-        val updatedClient = client(id = request.id)
-        every { clientRepository.updateClient(any()) } returns updatedClient
+        val existingClient = client(id = request.id)
+        val expectedClient =
+            existingClient.copy(
+                name = request.name ?: existingClient.name,
+                address = request.address ?: existingClient.address,
+            )
+
+        every { clientRepository.getClientById(request.id) } returns existingClient
+        every { clientRepository.updateClient(expectedClient) } returns expectedClient
 
         // Act
         val result = clientService.updateClient(request)
 
         // Assert
-        assertThat(result).isEqualTo(updatedClient)
-        verify(exactly = 1) {
-            clientRepository.updateClient(
-                Client(
-                    id = request.id,
-                    name = request.name,
-                    address = request.address,
-                ),
-            )
-        }
+        assertThat(result).isEqualTo(expectedClient)
+        verify(exactly = 1) { clientRepository.getClientById(request.id) }
+        verify(exactly = 1) { clientRepository.updateClient(expectedClient) }
     }
 
     @Test
@@ -129,7 +129,7 @@ class ClientServiceTest {
         verify(exactly = 1) { bankAccountRepository.deleteBankAccountByClientId(clientId) }
     }
 
-    private fun client(id: String = "client-id") =
+    private fun client(id: String) =
         Client(
             id = id,
             name =
@@ -162,7 +162,7 @@ class ClientServiceTest {
                 ),
         )
 
-    private fun updateClientCommand(id: String = "client-id") =
+    private fun updateClientCommand(id: String) =
         UpdateClientCommand(
             id = id,
             name =

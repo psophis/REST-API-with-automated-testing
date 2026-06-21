@@ -8,233 +8,182 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
 import java.time.Instant
 import javax.security.auth.login.AccountNotFoundException
 
 class PaymentControllerTest {
     private val paymentService = mockk<PaymentService>()
-    private val paymentController = PaymentController(paymentService)
+    private val mockMvc: MockMvc =
+        MockMvcBuilders
+            .standaloneSetup(PaymentController(paymentService))
+            .setMessageConverters(JacksonJsonHttpMessageConverter(jacksonMapperBuilder()))
+            .build()
 
     @Test
     fun `should send bank transfer`() {
-        // Arrange
-        val accountId = "account-id"
         val fromIban = "DE1234567890"
         val toIban = "DE0987654321"
         val amount = BigDecimal("100.00")
-        val transaction =
-            Transaction(
-                id = "transaction-id-1",
-                accountId = accountId,
-                senderIban = fromIban,
-                recipientIban = toIban,
-                amount = amount,
-                type = TransactionType.TRANSFER,
-                createdAt = Instant.now(),
-            )
-        val bankTransferRequest =
-            BankTransferRequest(
-                senderIban = fromIban,
-                recipientIban = toIban,
-                amount = amount,
-            )
-
-        every {
-            paymentService.transferMoney(
-                fromIban,
-                toIban,
-                amount,
-            )
-        } returns transaction
-
-        // Act
-        val response = paymentController.sendBankTransfer(bankTransferRequest)
-
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.bankAccountId).isEqualTo(transaction.accountId)
-        assertThat(response.body!!.amount).isEqualTo(transaction.amount)
-        assertThat(response.body!!.type).isEqualTo(TransactionType.TRANSFER)
-        verify(exactly = 1) { paymentService.transferMoney(fromIban, toIban, amount) }
-    }
-
-    @Test
-    fun `should map sent bank transfer to transaction dto`() {
-        // Arrange
-        val accountId = "account-id"
-        val transactionId = "transaction-id"
-        val amount = BigDecimal("100.00")
-        val createdAt = Instant.now()
-        val fromIban = "DE1234567890"
-        val toIban = "DE0987654321"
-        val transaction =
-            Transaction(
-                id = transactionId,
-                accountId = accountId,
-                senderIban = fromIban,
-                recipientIban = toIban,
-                amount = amount,
-                type = TransactionType.TRANSFER,
-                createdAt = createdAt,
-            )
-        val bankTransferRequest =
-            BankTransferRequest(
-                amount = amount,
-                senderIban = fromIban,
-                recipientIban = toIban,
-            )
-
+        val transaction = transaction(senderIban = fromIban, recipientIban = toIban)
         every { paymentService.transferMoney(fromIban, toIban, amount) } returns transaction
 
-        // Act
-        val response = paymentController.sendBankTransfer(bankTransferRequest)
+        mockMvc
+            .perform(
+                post("/api/payments/transfer")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(transferJson(fromIban, toIban, amount)),
+            ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").value(transaction.id))
+            .andExpect(jsonPath("$.bankAccountId").value(transaction.accountId))
+            .andExpect(jsonPath("$.amount").value(100.00))
+            .andExpect(jsonPath("$.type").value(TransactionType.TRANSFER.name))
+            .andExpect(jsonPath("$.createdAt").value(transaction.createdAt.toString()))
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body).isNotNull
-        assertThat(response.body!!.id).isEqualTo(transactionId)
-        assertThat(response.body!!.bankAccountId).isEqualTo(accountId)
-        assertThat(response.body!!.amount).isEqualByComparingTo("100.00")
-        assertThat(response.body!!.type).isEqualTo(TransactionType.TRANSFER)
-        assertThat(response.body!!.createdAt).isEqualTo(createdAt)
         verify(exactly = 1) { paymentService.transferMoney(fromIban, toIban, amount) }
     }
 
     @Test
     fun `should return 404 error when sender's bank account is not found`() {
-        // Arrange
         val fromIban = "DE1234567890"
         val toIban = "DE0987654321"
         val amount = BigDecimal("100.00")
-        val bankTransferRequest =
-            BankTransferRequest(
-                amount,
-                fromIban,
-                toIban,
-            )
+        every {
+            paymentService.transferMoney(fromIban, toIban, amount)
+        } throws AccountNotFoundException("Account not found")
 
-        every { paymentService.transferMoney(toIban, fromIban, amount) } throws AccountNotFoundException("Account not found for accountId")
+        mockMvc
+            .perform(
+                post("/api/payments/transfer")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(transferJson(fromIban, toIban, amount)),
+            ).andExpect(status().isNotFound)
 
-        // Act
-        val response = paymentController.sendBankTransfer(bankTransferRequest)
-
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
-        verify(exactly = 1) {
-            paymentService.transferMoney(toIban, fromIban, amount)
-        }
+        verify(exactly = 1) { paymentService.transferMoney(fromIban, toIban, amount) }
     }
 
     @Test
     fun `should return 500 error when transfer cannot be sent`() {
-        // Arrange
-        val fromIban = "DE0987654321"
-        val toIban = "DE1234567890"
+        val fromIban = "DE1234567890"
+        val toIban = "DE0987654321"
         val amount = BigDecimal("100.00")
-        val bankTransferRequest =
-            BankTransferRequest(
-                amount,
-                toIban,
-                fromIban,
-            )
-
         every { paymentService.transferMoney(fromIban, toIban, amount) } throws RuntimeException("boom")
 
-        // Act
-        val response = paymentController.sendBankTransfer(bankTransferRequest)
+        mockMvc
+            .perform(
+                post("/api/payments/transfer")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(transferJson(fromIban, toIban, amount)),
+            ).andExpect(status().isInternalServerError)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
-        verify(exactly = 1) {
-            paymentService.transferMoney(fromIban, toIban, amount)
-        }
+        verify(exactly = 1) { paymentService.transferMoney(fromIban, toIban, amount) }
     }
 
     @Test
     fun `should withdraw money`() {
-        // Arrange
         val accountId = "account-id"
         val amount = BigDecimal("100.00")
-        val withdrawalRequest =
-            WithdrawalRequest(
-                bankAccountId = accountId,
-                amount = BigDecimal("100.00"),
-            )
-
         every { paymentService.withdrawMoney(accountId, amount) } just runs
 
-        // Act
-        val response = paymentController.withdrawMoney(withdrawalRequest)
+        mockMvc
+            .perform(
+                post("/api/payments/withdrawal")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(paymentJson(accountId, amount)),
+            ).andExpect(status().isOk)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        verify { paymentService.withdrawMoney(accountId, amount) }
+        verify(exactly = 1) { paymentService.withdrawMoney(accountId, amount) }
     }
 
     @Test
     fun `should return 500 error when money cannot be withdrawn`() {
-        // Arrange
         val accountId = "account-id"
         val amount = BigDecimal("100.00")
-        val withdrawalRequest =
-            WithdrawalRequest(
-                bankAccountId = accountId,
-                amount = BigDecimal("100.00"),
-            )
-
         every { paymentService.withdrawMoney(accountId, amount) } throws RuntimeException("boom")
 
-        // Act
-        val response = paymentController.withdrawMoney(withdrawalRequest)
+        mockMvc
+            .perform(
+                post("/api/payments/withdrawal")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(paymentJson(accountId, amount)),
+            ).andExpect(status().isInternalServerError)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
         verify(exactly = 1) { paymentService.withdrawMoney(accountId, amount) }
     }
 
     @Test
     fun `should deposit money`() {
-        // Arrange
         val accountId = "account-id"
         val amount = BigDecimal("100.00")
-        val depositRequest =
-            DepositRequest(
-                bankAccountId = accountId,
-                amount = amount,
-            )
-
         every { paymentService.depositMoney(accountId, amount) } just runs
 
-        // Act
-        val response = paymentController.depositMoney(depositRequest)
+        mockMvc
+            .perform(
+                post("/api/payments/deposit")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(paymentJson(accountId, amount)),
+            ).andExpect(status().isOk)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        verify { paymentService.depositMoney(accountId, amount) }
+        verify(exactly = 1) { paymentService.depositMoney(accountId, amount) }
     }
 
     @Test
     fun `should return 500 error when money cannot be deposited`() {
-        // Arrange
         val accountId = "account-id"
         val amount = BigDecimal("100.00")
-        val depositRequest =
-            DepositRequest(
-                bankAccountId = accountId,
-                amount = amount,
-            )
-
         every { paymentService.depositMoney(accountId, amount) } throws RuntimeException("boom")
 
-        // Act
-        val response = paymentController.depositMoney(depositRequest)
+        mockMvc
+            .perform(
+                post("/api/payments/deposit")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(paymentJson(accountId, amount)),
+            ).andExpect(status().isInternalServerError)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
         verify(exactly = 1) { paymentService.depositMoney(accountId, amount) }
     }
+
+    private fun transaction(
+        senderIban: String,
+        recipientIban: String,
+    ) = Transaction(
+        id = "transaction-id",
+        accountId = "account-id",
+        senderIban = senderIban,
+        recipientIban = recipientIban,
+        amount = BigDecimal("100.00"),
+        type = TransactionType.TRANSFER,
+        createdAt = Instant.parse("2026-06-21T12:00:00Z"),
+    )
+
+    private fun transferJson(
+        senderIban: String,
+        recipientIban: String,
+        amount: BigDecimal,
+    ) = """
+        {
+          "senderIban": "$senderIban",
+          "recipientIban": "$recipientIban",
+          "amount": $amount
+        }
+        """.trimIndent()
+
+    private fun paymentJson(
+        accountId: String,
+        amount: BigDecimal,
+    ) = """
+        {
+          "bankAccountId": "$accountId",
+          "amount": $amount
+        }
+        """.trimIndent()
 }
