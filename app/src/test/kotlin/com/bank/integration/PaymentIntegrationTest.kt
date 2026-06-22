@@ -58,7 +58,7 @@ class PaymentIntegrationTest {
         val depositRequest =
             DepositRequest(
                 bankAccountId = account.id,
-                amount = BigDecimal("100.00")
+                amount = BigDecimal("100.00"),
             )
 
         // Act
@@ -91,10 +91,11 @@ class PaymentIntegrationTest {
                     createdAt = Instant.now(),
                 ),
             )
-        val withdrawalRequest = WithdrawalRequest(
-            bankAccountId = account.id,
-            amount = BigDecimal("50.00"),
-        )
+        val withdrawalRequest =
+            WithdrawalRequest(
+                bankAccountId = account.id,
+                amount = BigDecimal("50.00"),
+            )
 
         // Act
         val response = paymentController.withdrawMoney(withdrawalRequest)

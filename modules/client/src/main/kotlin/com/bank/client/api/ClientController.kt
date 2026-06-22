@@ -77,12 +77,13 @@ class ClientController(
         @RequestBody client: ClientCreationRequest,
     ): ResponseEntity<ClientUpdateRequest> {
         try {
-            val createdClient = clientService.createClient(
-                CreateClientCommand(
-                    name = client.name,
-                    address = client.address,
+            val createdClient =
+                clientService.createClient(
+                    CreateClientCommand(
+                        name = client.name,
+                        address = client.address,
+                    ),
                 )
-            )
             return ResponseEntity.status(HttpStatus.OK).body(
                 ClientUpdateRequest(
                     id = createdClient.id,
@@ -101,13 +102,14 @@ class ClientController(
         @RequestBody client: ClientUpdateRequest,
     ): ResponseEntity<ClientUpdateRequest> {
         try {
-            val updatedClient = clientService.updateClient(
-                UpdateClientCommand(
-                    id = client.id,
-                    name = client.name,
-                    address = client.address,
+            val updatedClient =
+                clientService.updateClient(
+                    UpdateClientCommand(
+                        id = client.id,
+                        name = client.name,
+                        address = client.address,
+                    ),
                 )
-            )
 
             return ResponseEntity.status(HttpStatus.OK).body(
                 ClientUpdateRequest(
