@@ -3,6 +3,8 @@ package com.bank.integration
 import com.bank.BankingBackendApplication
 import com.bank.bankaccount.persistence.BankAccountEntity
 import com.bank.bankaccount.persistence.BankAccountJpaRepository
+import com.bank.client.persistence.ClientEntity
+import com.bank.client.persistence.ClientJpaRepository
 import com.bank.payment.api.BankTransferRequest
 import com.bank.payment.api.DepositRequest
 import com.bank.payment.api.PaymentController
@@ -36,6 +38,9 @@ class PaymentIntegrationTest {
     @Autowired
     private lateinit var transactionJpaRepository: TransactionJpaRepository
 
+    @Autowired
+    private lateinit var clientJpaRepository: ClientJpaRepository
+
     @BeforeEach
     fun cleanDatabase() {
         transactionJpaRepository.deleteAll()
@@ -45,11 +50,23 @@ class PaymentIntegrationTest {
     @Test
     fun `should create transaction and update balance when depositing money`() {
         // Arrange
+        val client =
+            clientJpaRepository.save(
+                ClientEntity(
+                    id = UUID.randomUUID().toString(),
+                    lastName = "Smith",
+                    firstName = "Jane",
+                    street = "Main Street",
+                    number = "45",
+                    city = "Berlin",
+                    zipCode = "12345",
+                )
+            )
         val account =
             bankAccountJpaRepository.save(
                 BankAccountEntity(
                     id = UUID.randomUUID().toString(),
-                    clientId = UUID.randomUUID().toString(),
+                    clientId = client.id,
                     iban = "DE12345678901234567890",
                     balance = BigDecimal.ZERO,
                     createdAt = Instant.now(),
@@ -58,7 +75,7 @@ class PaymentIntegrationTest {
         val depositRequest =
             DepositRequest(
                 bankAccountId = account.id,
-                amount = BigDecimal("100.00")
+                amount = BigDecimal("100.00"),
             )
 
         // Act
@@ -81,20 +98,33 @@ class PaymentIntegrationTest {
     @Test
     fun `should create transaction and update balance when withdrawing money`() {
         // Arrange
+        val client =
+            clientJpaRepository.save(
+                ClientEntity(
+                    id = UUID.randomUUID().toString(),
+                    lastName = "Smith",
+                    firstName = "Jane",
+                    street = "Main Street",
+                    number = "45",
+                    city = "Berlin",
+                    zipCode = "12345",
+                )
+            )
         val account =
             bankAccountJpaRepository.save(
                 BankAccountEntity(
                     id = UUID.randomUUID().toString(),
-                    clientId = UUID.randomUUID().toString(),
+                    clientId = client.id,
                     iban = "DE12345678901234567890",
                     balance = BigDecimal("100.00"),
                     createdAt = Instant.now(),
                 ),
             )
-        val withdrawalRequest = WithdrawalRequest(
-            bankAccountId = account.id,
-            amount = BigDecimal("50.00"),
-        )
+        val withdrawalRequest =
+            WithdrawalRequest(
+                bankAccountId = account.id,
+                amount = BigDecimal("50.00"),
+            )
 
         // Act
         val response = paymentController.withdrawMoney(withdrawalRequest)
@@ -116,11 +146,23 @@ class PaymentIntegrationTest {
     @Test
     fun `should create transaction and update balance when sending bank transfer`() {
         // Arrange
+        val client =
+            clientJpaRepository.save(
+                ClientEntity(
+                    id = UUID.randomUUID().toString(),
+                    lastName = "Smith",
+                    firstName = "Jane",
+                    street = "Main Street",
+                    number = "45",
+                    city = "Berlin",
+                    zipCode = "12345",
+                )
+            )
         val account =
             bankAccountJpaRepository.save(
                 BankAccountEntity(
                     id = UUID.randomUUID().toString(),
-                    clientId = UUID.randomUUID().toString(),
+                    clientId = client.id,
                     iban = "DE12345678901234567890",
                     balance = BigDecimal("100.00"),
                     createdAt = Instant.now(),
@@ -153,11 +195,23 @@ class PaymentIntegrationTest {
     @Test
     fun `should create transaction and update balance when receiving bank transfer`() {
         // Arrange
+        val client =
+            clientJpaRepository.save(
+                ClientEntity(
+                    id = UUID.randomUUID().toString(),
+                    lastName = "Smith",
+                    firstName = "Jane",
+                    street = "Main Street",
+                    number = "45",
+                    city = "Berlin",
+                    zipCode = "12345",
+                )
+            )
         val account =
             bankAccountJpaRepository.save(
                 BankAccountEntity(
                     id = UUID.randomUUID().toString(),
-                    clientId = UUID.randomUUID().toString(),
+                    clientId = client.id,
                     iban = "DE12345678901234567890",
                     balance = BigDecimal("100.00"),
                     createdAt = Instant.now(),
@@ -184,9 +238,6 @@ class PaymentIntegrationTest {
         assertThat(transactions.single().recipientIban).isEqualTo(account.iban)
         assertThat(transactions.single().senderIban).isEqualTo("DE0987654321")
     }
-
-    @Test
-    fun `should update both accounts for internal money transfer`() {}
 
     companion object {
         @Container

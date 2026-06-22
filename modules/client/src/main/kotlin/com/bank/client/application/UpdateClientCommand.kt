@@ -5,6 +5,6 @@ import com.bank.client.domain.ClientName
 
 data class UpdateClientCommand(
     val id: String,
-    val name: ClientName,
-    val address: ClientAddress,
+    val name: ClientName?,
+    val address: ClientAddress?,
 )
