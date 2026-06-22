@@ -22,9 +22,7 @@ class BankAccountService(
         }
     }
 
-    fun createBankAccount(
-        clientId: String,
-    ): BankAccount {
+    fun createBankAccount(clientId: String): BankAccount {
         try {
             val bankAccount =
                 BankAccount(
