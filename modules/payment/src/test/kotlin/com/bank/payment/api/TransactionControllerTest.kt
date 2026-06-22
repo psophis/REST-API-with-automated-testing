@@ -6,150 +6,108 @@ import com.bank.payment.domain.TransactionType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.http.HttpStatus
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
 import java.time.Instant
 
 class TransactionControllerTest {
     private val transactionService = mockk<TransactionService>()
-    private val transactionController = TransactionController(transactionService)
+    private val mockMvc: MockMvc =
+        MockMvcBuilders
+            .standaloneSetup(TransactionController(transactionService))
+            .setMessageConverters(JacksonJsonHttpMessageConverter(jacksonMapperBuilder()))
+            .build()
 
     @Test
     fun `should get transactions by account id`() {
-        // Arrange
         val accountId = "account-id"
-        val transaction =
-            Transaction(
-                id = "transaction-id-1",
-                accountId = accountId,
-                senderIban = "DE1234567890",
-                recipientIban = "DE0987654321",
-                amount = BigDecimal("100.00"),
-                type = TransactionType.TRANSFER,
-                createdAt = Instant.now(),
-            )
-
+        val transaction = transaction(accountId = accountId)
         every { transactionService.getAccountTransactions(accountId) } returns listOf(transaction)
 
-        // Act
-        val response = transactionController.getAccountTransactions(accountId)
+        mockMvc
+            .perform(get("/api/transactions/{accountId}/transactions", accountId))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].id").value(transaction.id))
+            .andExpect(jsonPath("$[0].bankAccountId").value(accountId))
+            .andExpect(jsonPath("$[0].amount").value(100.00))
+            .andExpect(jsonPath("$[0].type").value(TransactionType.TRANSFER.name))
+            .andExpect(jsonPath("$[0].createdAt").value(transaction.createdAt.toString()))
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.size).isEqualTo(1)
         verify(exactly = 1) { transactionService.getAccountTransactions(accountId) }
     }
 
     @Test
     fun `should return empty transaction list when account has no transactions`() {
-        // Arrange
         val accountId = "account-id"
-
         every { transactionService.getAccountTransactions(accountId) } returns emptyList()
 
-        // Act
-        val response = transactionController.getAccountTransactions(accountId)
+        mockMvc
+            .perform(get("/api/transactions/{accountId}/transactions", accountId))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").isEmpty)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.size).isEqualTo(0)
-        verify(exactly = 1) { transactionService.getAccountTransactions(accountId) }
-    }
-
-    @Test
-    fun `should map returned transactions to transaction dto`() {
-        // Arrange
-        val accountId = "account-id"
-        val transactionId = "transaction-id"
-        val createdAt = Instant.now()
-        val transaction =
-            Transaction(
-                id = transactionId,
-                accountId = accountId,
-                senderIban = "DE1234567890",
-                recipientIban = "DE0987654321",
-                amount = BigDecimal("100.00"),
-                type = TransactionType.TRANSFER,
-                createdAt = createdAt,
-            )
-
-        every { transactionService.getAccountTransactions(accountId) } returns listOf(transaction)
-
-        // Act
-        val response = transactionController.getAccountTransactions(accountId)
-
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body).isNotNull
-        assertThat(response.body).hasSize(1)
-        assertThat(response.body!![0].id).isEqualTo(transactionId)
-        assertThat(response.body!![0].bankAccountId).isEqualTo(accountId)
-        assertThat(response.body!![0].amount).isEqualByComparingTo("100.00")
-        assertThat(response.body!![0].type).isEqualTo(TransactionType.TRANSFER)
-        assertThat(response.body!![0].createdAt).isEqualTo(createdAt)
         verify(exactly = 1) { transactionService.getAccountTransactions(accountId) }
     }
 
     @Test
     fun `should return 500 error when transactions cannot be returned`() {
-        // Arrange
         val accountId = "account-id"
-
         every { transactionService.getAccountTransactions(accountId) } throws RuntimeException("boom")
 
-        // Act
-        val response = transactionController.getAccountTransactions(accountId)
+        mockMvc
+            .perform(get("/api/transactions/{accountId}/transactions", accountId))
+            .andExpect(status().isInternalServerError)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
-        assertThat(response.body).isNull()
         verify(exactly = 1) { transactionService.getAccountTransactions(accountId) }
     }
 
     @Test
-    fun `get transaction by transaction id`() {
-        // Arrange
+    fun `should get transaction by transaction id`() {
         val transactionId = "transaction-id"
-        val transaction =
-            Transaction(
-                id = transactionId,
-                accountId = "account-id",
-                senderIban = "DE1234567890",
-                recipientIban = "DE0987654321",
-                amount = BigDecimal("100.00"),
-                type = TransactionType.TRANSFER,
-                createdAt = Instant.now(),
-            )
-
+        val transaction = transaction(id = transactionId)
         every { transactionService.getTransaction(transactionId) } returns transaction
 
-        // Act
-        val response = transactionController.getTransaction(transactionId)
+        mockMvc
+            .perform(get("/api/transactions/{transactionId}", transactionId))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").value(transaction.id))
+            .andExpect(jsonPath("$.bankAccountId").value(transaction.accountId))
+            .andExpect(jsonPath("$.amount").value(100.00))
+            .andExpect(jsonPath("$.type").value(TransactionType.TRANSFER.name))
+            .andExpect(jsonPath("$.createdAt").value(transaction.createdAt.toString()))
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.id).isEqualTo(transaction.id)
-        assertThat(response.body!!.bankAccountId).isEqualTo(transaction.accountId)
-        assertThat(response.body!!.amount).isEqualTo(transaction.amount)
-        assertThat(response.body!!.type).isEqualTo(TransactionType.TRANSFER)
         verify(exactly = 1) { transactionService.getTransaction(transactionId) }
     }
 
     @Test
     fun `should return 500 error when transaction cannot be returned`() {
-        // Arrange
         val transactionId = "transaction-id"
-
         every { transactionService.getTransaction(transactionId) } throws RuntimeException("boom")
 
-        // Act
-        val response = transactionController.getTransaction(transactionId)
+        mockMvc
+            .perform(get("/api/transactions/{transactionId}", transactionId))
+            .andExpect(status().isInternalServerError)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
-        assertThat(response.body).isNull()
         verify(exactly = 1) { transactionService.getTransaction(transactionId) }
     }
+
+    private fun transaction(
+        id: String = "transaction-id",
+        accountId: String = "account-id",
+    ) = Transaction(
+        id = id,
+        accountId = accountId,
+        senderIban = "DE1234567890",
+        recipientIban = "DE0987654321",
+        amount = BigDecimal("100.00"),
+        type = TransactionType.TRANSFER,
+        createdAt = Instant.parse("2026-06-21T12:00:00Z"),
+    )
 }

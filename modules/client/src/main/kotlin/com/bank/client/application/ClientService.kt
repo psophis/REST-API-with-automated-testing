@@ -53,23 +53,15 @@ class ClientService(
 
     @Transactional
     fun updateClient(command: UpdateClientCommand): Client {
-        val client =
-            Client(
-                id = command.id,
-                name =
-                    ClientName(
-                        name = command.name.name,
-                        firstName = command.name.firstName,
-                    ),
-                address =
-                    ClientAddress(
-                        street = command.address.street,
-                        number = command.address.number,
-                        zipCode = command.address.zipCode,
-                        city = command.address.city,
-                    ),
+        val existingClient = clientRepository.getClientById(command.id)
+
+        val updatedClient =
+            existingClient.copy(
+                name = command.name ?: existingClient.name,
+                address = command.address ?: existingClient.address,
             )
-        return clientRepository.updateClient(client)
+
+        return clientRepository.updateClient(updatedClient)
     }
 
     @Transactional

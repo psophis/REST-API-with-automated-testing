@@ -84,7 +84,8 @@ class ClientController(
                         address = client.address,
                     ),
                 )
-            return ResponseEntity.status(HttpStatus.OK).body(
+            )
+            return ResponseEntity.status(HttpStatus.CREATED).body(
                 ClientUpdateRequest(
                     id = createdClient.id,
                     name = createdClient.name,

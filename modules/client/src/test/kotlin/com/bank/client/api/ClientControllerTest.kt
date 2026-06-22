@@ -12,83 +12,90 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
 import java.time.Instant
 
 class ClientControllerTest {
     private val clientService = mockk<ClientService>()
-    private val clientController = ClientController(clientService)
+    private val mockMvc: MockMvc =
+        MockMvcBuilders
+            .standaloneSetup(ClientController(clientService))
+            .setMessageConverters(JacksonJsonHttpMessageConverter(jacksonMapperBuilder()))
+            .build()
 
     @Test
     fun `should get client`() {
-        // Arrange
         val client = client()
         every { clientService.getClient(client.id) } returns client
 
-        // Act
-        val response = clientController.getClient(client.id)
+        mockMvc
+            .perform(get("/api/clients/{clientId}", client.id))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").value(client.id))
+            .andExpect(jsonPath("$.name.name").value(client.name.name))
+            .andExpect(jsonPath("$.name.firstName").value(client.name.firstName))
+            .andExpect(jsonPath("$.address.street").value(client.address.street))
+            .andExpect(jsonPath("$.address.number").value(client.address.number))
+            .andExpect(jsonPath("$.address.zipCode").value(client.address.zipCode))
+            .andExpect(jsonPath("$.address.city").value(client.address.city))
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.id).isEqualTo(client.id)
-        assertThat(response.body!!.name).isEqualTo(client.name)
-        assertThat(response.body!!.address).isEqualTo(client.address)
         verify(exactly = 1) { clientService.getClient(client.id) }
     }
 
     @Test
     fun `should return 404 when client is not found`() {
-        // Arrange
         val clientId = "missing-client"
         every { clientService.getClient(clientId) } throws NoSuchElementException("Client not found: $clientId")
 
-        // Act
-        val response = clientController.getClient(clientId)
+        mockMvc
+            .perform(get("/api/clients/{clientId}", clientId))
+            .andExpect(status().isNotFound)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
         verify(exactly = 1) { clientService.getClient(clientId) }
     }
 
     @Test
     fun `should get client accounts`() {
-        // Arrange
         val clientId = "client-id"
         val account = account(clientId)
         every { clientService.getClientAccounts(clientId) } returns listOf(account)
 
-        // Act
-        val response = clientController.getClientAccounts(clientId)
+        mockMvc
+            .perform(get("/api/clients/{clientId}/accounts", clientId))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].id").value(account.id))
+            .andExpect(jsonPath("$[0].clientId").value(account.clientId))
+            .andExpect(jsonPath("$[0].iban").value(account.iban))
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body).hasSize(1)
-        assertThat(response.body!![0].id).isEqualTo(account.id)
-        assertThat(response.body!![0].clientId).isEqualTo(account.clientId)
-        assertThat(response.body!![0].iban).isEqualTo(account.iban)
         verify(exactly = 1) { clientService.getClientAccounts(clientId) }
     }
 
     @Test
     fun `should return 404 when client accounts are not found`() {
-        // Arrange
         val clientId = "missing-client"
         every { clientService.getClientAccounts(clientId) } throws NoSuchElementException("Client not found: $clientId")
 
-        // Act
-        val response = clientController.getClientAccounts(clientId)
+        mockMvc
+            .perform(get("/api/clients/{clientId}/accounts", clientId))
+            .andExpect(status().isNotFound)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
         verify(exactly = 1) { clientService.getClientAccounts(clientId) }
     }
 
     @Test
     fun `should create client`() {
-        // Arrange
         val request = clientCreationRequest()
         val command =
             CreateClientCommand(
@@ -98,20 +105,40 @@ class ClientControllerTest {
         val createdClient = client(id = "created-id")
         every { clientService.createClient(command) } returns createdClient
 
-        // Act
-        val response = clientController.createClient(request)
+        mockMvc
+            .perform(
+                post("/api/clients")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": {
+                            "name": "${request.name.name}",
+                            "firstName": "${request.name.firstName}"
+                          },
+                          "address": {
+                            "street": "${request.address.street}",
+                            "number": "${request.address.number}",
+                            "zipCode": "${request.address.zipCode}",
+                            "city": "${request.address.city}"
+                          }
+                        }
+                        """.trimIndent(),
+                    ),
+            ).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.id").value(createdClient.id))
+            .andExpect(jsonPath("$.name.name").value(createdClient.name.name))
+            .andExpect(jsonPath("$.name.firstName").value(createdClient.name.firstName))
+            .andExpect(jsonPath("$.address.street").value(createdClient.address.street))
+            .andExpect(jsonPath("$.address.number").value(createdClient.address.number))
+            .andExpect(jsonPath("$.address.zipCode").value(createdClient.address.zipCode))
+            .andExpect(jsonPath("$.address.city").value(createdClient.address.city))
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.id).isEqualTo(createdClient.id)
-        assertThat(response.body!!.name).isEqualTo(createdClient.name)
-        assertThat(response.body!!.address).isEqualTo(createdClient.address)
         verify(exactly = 1) { clientService.createClient(command) }
     }
 
     @Test
     fun `should update client`() {
-        // Arrange
         val request = clientUpdateRequest(id = "client-id")
         val command =
             UpdateClientCommand(
@@ -122,60 +149,68 @@ class ClientControllerTest {
         val updatedClient = client(id = request.id)
         every { clientService.updateClient(command) } returns updatedClient
 
-        // Act
-        val response = clientController.updateClient(request)
+        mockMvc
+            .perform(
+                put("/api/clients")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "id": "${request.id}",
+                          "name": {
+                            "name": "${request.name?.name}",
+                            "firstName": "${request.name?.firstName}"
+                          },
+                          "address": {
+                            "street": "${request.address?.street}",
+                            "number": "${request.address?.number}",
+                            "zipCode": "${request.address?.zipCode}",
+                            "city": "${request.address?.city}"
+                          }
+                        }
+                        """.trimIndent(),
+                    ),
+            ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").value(updatedClient.id))
+            .andExpect(jsonPath("$.name.name").value(updatedClient.name.name))
+            .andExpect(jsonPath("$.name.firstName").value(updatedClient.name.firstName))
+            .andExpect(jsonPath("$.address.street").value(updatedClient.address.street))
+            .andExpect(jsonPath("$.address.number").value(updatedClient.address.number))
+            .andExpect(jsonPath("$.address.zipCode").value(updatedClient.address.zipCode))
+            .andExpect(jsonPath("$.address.city").value(updatedClient.address.city))
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.id).isEqualTo(updatedClient.id)
-        assertThat(response.body!!.name).isEqualTo(updatedClient.name)
-        assertThat(response.body!!.address).isEqualTo(updatedClient.address)
         verify(exactly = 1) { clientService.updateClient(command) }
     }
 
     @Test
     fun `should delete client`() {
-        // Arrange
         val clientId = "client-id"
         every { clientService.deleteClient(clientId) } just runs
 
-        // Act
-        val response = clientController.deleteClient(clientId)
+        mockMvc
+            .perform(delete("/api/clients/{clientId}", clientId))
+            .andExpect(status().isNoContent)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.NO_CONTENT)
         verify(exactly = 1) { clientService.deleteClient(clientId) }
     }
 
     @Test
     fun `should return 404 when deleting missing client`() {
-        // Arrange
         val clientId = "missing-client"
         every { clientService.deleteClient(clientId) } throws NoSuchElementException("Client not found: $clientId")
 
-        // Act
-        val response = clientController.deleteClient(clientId)
+        mockMvc
+            .perform(delete("/api/clients/{clientId}", clientId))
+            .andExpect(status().isNotFound)
 
-        // Assert
-        assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
         verify(exactly = 1) { clientService.deleteClient(clientId) }
     }
 
     private fun client(id: String = "client-id") =
         Client(
             id = id,
-            name =
-                ClientName(
-                    name = "Doe",
-                    firstName = "Jane",
-                ),
-            address =
-                ClientAddress(
-                    street = "Main Street",
-                    number = "1",
-                    zipCode = "12345",
-                    city = "Berlin",
-                ),
+            name = clientName(),
+            address = clientAddress(),
         )
 
     private fun clientCreationRequest() =
@@ -184,7 +219,7 @@ class ClientControllerTest {
             address = clientAddress(),
         )
 
-    private fun clientUpdateRequest(id: String = "client-id") =
+    private fun clientUpdateRequest(id: String) =
         ClientUpdateRequest(
             id = id,
             name = clientName(),
