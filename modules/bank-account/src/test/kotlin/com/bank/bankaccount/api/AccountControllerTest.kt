@@ -1,5 +1,6 @@
 package com.bank.bankaccount.api
 
+import com.bank.bankaccount.application.BankAccountNotFoundException
 import com.bank.bankaccount.application.BankAccountService
 import com.bank.bankaccount.createAccount
 import io.mockk.every
@@ -22,7 +23,8 @@ class AccountControllerTest {
     private val mockMvc: MockMvc =
         MockMvcBuilders
             .standaloneSetup(BankAccountController(bankAccountService))
-            .setMessageConverters(JacksonJsonHttpMessageConverter(jacksonMapperBuilder()))
+            .setMessageConverters(JacksonJsonHttpMessageConverter
+                (jacksonMapperBuilder()))
             .build()
 
     @Test
@@ -44,7 +46,7 @@ class AccountControllerTest {
     @Test
     fun `should return 404 if account is not found`() {
         val accountId = "account-id"
-        every { bankAccountService.getBankAccount(accountId) } throws RuntimeException("boom")
+        every { bankAccountService.getBankAccount(accountId) } throws BankAccountNotFoundException(accountId)
 
         mockMvc
             .perform(get("/api/accounts/{bankAccountId}", accountId))

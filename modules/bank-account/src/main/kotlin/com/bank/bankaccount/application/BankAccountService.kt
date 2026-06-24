@@ -16,7 +16,7 @@ class BankAccountService(
     fun getBankAccount(accountId: String): BankAccount {
         try {
             return bankAccountRepository.getBankAccountById(accountId)
-                ?: throw AccountNotFoundException("Account not found for accountId $accountId")
+                ?: throw BankAccountNotFoundException(accountId)
         } catch (e: Exception) {
             throw e
         }

@@ -1,5 +1,6 @@
 package com.bank.bankaccount.api
 
+import com.bank.bankaccount.application.BankAccountNotFoundException
 import com.bank.bankaccount.application.BankAccountService
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -23,9 +24,9 @@ class BankAccountController(
     fun getBankAccount(
         @PathVariable bankAccountId: String,
     ): ResponseEntity<BankAccountDto> {
-        try {
+        return try {
             val bankAccount = bankAccountService.getBankAccount(bankAccountId)
-            return ResponseEntity.status(HttpStatus.OK).body(
+            ResponseEntity.ok(
                 BankAccountDto(
                     id = bankAccount.id,
                     clientId = bankAccount.clientId,
@@ -34,9 +35,12 @@ class BankAccountController(
                     createdAt = bankAccount.createdAt,
                 ),
             )
+        } catch (e: BankAccountNotFoundException) {
+            logger.warn("Failed to get account with id {}: {}", bankAccountId, e.message)
+            ResponseEntity.notFound().build()
         } catch (e: Exception) {
-            logger.warn("Failed to get account with id $bankAccountId: ${e.message}")
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+            logger.error("Error getting account with id {}: {}", bankAccountId, e.message)
+            ResponseEntity.internalServerError().build()
         }
     }
 
