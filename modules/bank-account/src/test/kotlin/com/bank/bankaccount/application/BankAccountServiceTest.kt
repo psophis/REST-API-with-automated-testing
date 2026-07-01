@@ -15,7 +15,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import kotlin.test.assertEquals
 
-class AccountServiceTest {
+class BankAccountServiceTest {
     private lateinit var bankAccountRepository: BankAccountRepository
     private lateinit var ibanGenerator: IbanGenerator
     private lateinit var bankAccountService: BankAccountService

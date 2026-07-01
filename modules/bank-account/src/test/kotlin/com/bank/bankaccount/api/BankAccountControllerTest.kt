@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
 
-class AccountControllerTest {
+class BankAccountControllerTest {
     private val bankAccountService = mockk<BankAccountService>()
     private val mockMvc: MockMvc =
         MockMvcBuilders
