@@ -17,10 +17,13 @@ class ClientService(
     private val bankAccountRepository: BankAccountRepository,
     private val bankAccountService: BankAccountService,
 ) {
-    fun getClient(clientId: String): Client = clientRepository.getClientById(clientId)
+    fun getClient(clientId: String): Client {
+        return clientRepository.getClientById(clientId)
+            ?: throw ClientNotFoundException(clientId)
+    }
 
     fun getClientAccounts(clientId: String): List<BankAccount> {
-        clientRepository.getClientById(clientId)
+        getClient(clientId)
         return bankAccountRepository.getBankAccountsByClientId(clientId)
     }
 
@@ -53,7 +56,9 @@ class ClientService(
 
     @Transactional
     fun updateClient(command: UpdateClientCommand): Client {
-        val existingClient = clientRepository.getClientById(command.id)
+        val existingClient =
+            clientRepository.getClientById(command.id)
+                ?: throw ClientNotFoundException(command.id)
 
         val updatedClient =
             existingClient.copy(
@@ -66,6 +71,7 @@ class ClientService(
 
     @Transactional
     fun deleteClient(clientId: String) {
+        clientRepository.getClientById(clientId) ?: throw ClientNotFoundException(clientId)
         clientRepository.deleteClientById(clientId)
         bankAccountRepository.deleteBankAccountByClientId(clientId)
     }
