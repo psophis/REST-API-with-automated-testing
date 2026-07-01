@@ -55,7 +55,8 @@ class BankAccountRepositoryImplTest {
         val loaded = bankAccountRepository.getBankAccountById(bankAccountId)
 
         // Assert
-        assertEquals(bankAccount.id, loaded.id)
+        assertNotNull(loaded)
+        assertEquals(bankAccount.id, loaded!!.id)
         assertEquals(bankAccount.clientId, loaded.clientId)
         assertEquals(bankAccount.iban, loaded.iban)
     }
@@ -182,5 +183,191 @@ class BankAccountRepositoryImplTest {
                 amount = BigDecimal("-1"),
             )
         }
+    }
+
+    @Test
+    fun `should return null when account id is not found`() {
+        val result = bankAccountRepository.getBankAccountById("non-existent-id")
+
+        assertNull(result)
+    }
+
+    @Test
+    fun `should find accounts by client id`() {
+        // Arrange
+        val clientId = "client-1"
+        val firstAccount =
+            BankAccountEntity(
+                id = UUID.randomUUID().toString(),
+                clientId = clientId,
+                iban = "DE${UUID.randomUUID().toString().take(10)}",
+                balance = BigDecimal.ZERO,
+                createdAt = Instant.now(),
+            )
+        val secondAccount =
+            BankAccountEntity(
+                id = UUID.randomUUID().toString(),
+                clientId = clientId,
+                iban = "DE${UUID.randomUUID().toString().take(10)}",
+                balance = BigDecimal("100"),
+                createdAt = Instant.now(),
+            )
+
+        bankAccountJpaRepository.save(firstAccount)
+        bankAccountJpaRepository.save(secondAccount)
+
+        // Act
+        val result = bankAccountRepository.getBankAccountsByClientId(clientId)
+
+        // Assert
+        assertEquals(2, result.size)
+        assertTrue(result.any { it.id == firstAccount.id })
+        assertTrue(result.any { it.id == secondAccount.id })
+    }
+
+    @Test
+    fun `should return empty list when client has no accounts`() {
+        // Act
+        val result = bankAccountRepository.getBankAccountsByClientId("unknown-client")
+
+        // Assert
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `should throw exception when increasing balance for unknown account`() {
+        assertThrows(NoSuchElementException::class.java) {
+            bankAccountRepository.increaseBankAccountBalance(
+                bankAccountId = "unknown-account",
+                amount = BigDecimal("10"),
+            )
+        }
+    }
+
+    @Test
+    fun `should throw exception for zero increase amount`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            bankAccountRepository.increaseBankAccountBalance(
+                bankAccountId = UUID.randomUUID().toString(),
+                amount = BigDecimal.ZERO,
+            )
+        }
+    }
+
+    @Test
+    fun `should throw exception for negative decrease amount`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            bankAccountRepository.decreaseBankAccountBalance(
+                bankAccountId = UUID.randomUUID().toString(),
+                amount = BigDecimal("-1"),
+            )
+        }
+    }
+
+    @Test
+    fun `should throw exception for zero decrease amount`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            bankAccountRepository.decreaseBankAccountBalance(
+                bankAccountId = UUID.randomUUID().toString(),
+                amount = BigDecimal.ZERO,
+            )
+        }
+    }
+
+    @Test
+    fun `should throw exception when decreasing balance for unknown account`() {
+        assertThrows(NoSuchElementException::class.java) {
+            bankAccountRepository.decreaseBankAccountBalance(
+                bankAccountId = "unknown-account",
+                amount = BigDecimal("10"),
+            )
+        }
+    }
+
+    @Test
+    fun `should throw exception when decreasing more than balance`() {
+        // Arrange
+        val bankAccountId = UUID.randomUUID().toString()
+        val entity =
+            BankAccountEntity(
+                id = bankAccountId,
+                clientId = "client-1",
+                iban = "DE${UUID.randomUUID().toString().take(10)}",
+                balance = BigDecimal("100"),
+                createdAt = Instant.now(),
+            )
+
+        bankAccountJpaRepository.save(entity)
+
+        // Act/Assert
+        assertThrows(IllegalStateException::class.java) {
+            bankAccountRepository.decreaseBankAccountBalance(
+                bankAccountId = bankAccountId,
+                amount = BigDecimal("150"),
+            )
+        }
+    }
+
+    @Test
+    fun `should delete accounts by client id`() {
+        // Arrange
+        val clientId = "client-1"
+        val firstAccount =
+            BankAccountEntity(
+                id = UUID.randomUUID().toString(),
+                clientId = clientId,
+                iban = "DE${UUID.randomUUID().toString().take(10)}",
+                balance = BigDecimal.ZERO,
+                createdAt = Instant.now(),
+            )
+        val secondAccount =
+            BankAccountEntity(
+                id = UUID.randomUUID().toString(),
+                clientId = clientId,
+                iban = "DE${UUID.randomUUID().toString().take(10)}",
+                balance = BigDecimal("100"),
+                createdAt = Instant.now(),
+            )
+        val otherClientAccount =
+            BankAccountEntity(
+                id = UUID.randomUUID().toString(),
+                clientId = "client-2",
+                iban = "DE${UUID.randomUUID().toString().take(10)}",
+                balance = BigDecimal("200"),
+                createdAt = Instant.now(),
+            )
+
+        bankAccountJpaRepository.save(firstAccount)
+        bankAccountJpaRepository.save(secondAccount)
+        bankAccountJpaRepository.save(otherClientAccount)
+
+        // Act
+        bankAccountRepository.deleteBankAccountByClientId(clientId)
+
+        // Assert
+        assertTrue(bankAccountJpaRepository.findById(firstAccount.id).isEmpty)
+        assertTrue(bankAccountJpaRepository.findById(secondAccount.id).isEmpty)
+        assertTrue(bankAccountJpaRepository.findById(otherClientAccount.id).isPresent)
+    }
+
+    @Test
+    fun `should do nothing when deleting accounts by unknown client id`() {
+        // Arrange
+        val entity =
+            BankAccountEntity(
+                id = UUID.randomUUID().toString(),
+                clientId = "client-1",
+                iban = "DE${UUID.randomUUID().toString().take(10)}",
+                balance = BigDecimal.ZERO,
+                createdAt = Instant.now(),
+            )
+
+        bankAccountJpaRepository.save(entity)
+
+        // Act
+        bankAccountRepository.deleteBankAccountByClientId("unknown-client")
+
+        // Assert
+        assertTrue(bankAccountJpaRepository.findById(entity.id).isPresent)
     }
 }
