@@ -12,11 +12,11 @@ class ClientRepositoryImpl(
     private val clientJpaRepository: ClientJpaRepository,
 ) : ClientRepository {
     @Transactional(readOnly = true)
-    override fun getClientById(clientId: String): Client =
+    override fun getClientById(clientId: String): Client? =
         clientJpaRepository
             .findById(clientId)
             .map(ClientEntity::toDomain)
-            .orElseThrow { NoSuchElementException("Client not found: $clientId") }
+            .orElse(null)
 
     override fun createClient(client: Client): Client = clientJpaRepository.save(client.toEntity()).toDomain()
 

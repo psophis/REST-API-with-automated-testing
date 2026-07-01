@@ -1,9 +1,10 @@
 package com.bank.client.api
 
+import com.bank.bankaccount.domain.BankAccount
 import com.bank.client.application.ClientService
 import com.bank.client.application.CreateClientCommand
 import com.bank.client.application.UpdateClientCommand
-import org.slf4j.LoggerFactory
+import com.bank.client.domain.Client
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -22,120 +23,61 @@ import java.time.Instant
 class ClientController(
     private val clientService: ClientService,
 ) {
-    val logger = LoggerFactory.getLogger(ClientController::class.java)
-
     @GetMapping("/{clientId}")
     fun getClient(
         @PathVariable clientId: String,
     ): ResponseEntity<ClientUpdateRequest> {
-        try {
-            val client = clientService.getClient(clientId)
-            return ResponseEntity.ok(
-                ClientUpdateRequest(
-                    id = client.id,
-                    name = client.name,
-                    address = client.address,
-                ),
-            )
-        } catch (e: NoSuchElementException) {
-            logger.warn("Client not found: $clientId", e)
-            return ResponseEntity.notFound().build()
-        } catch (e: Exception) {
-            logger.error("Error getting client: $clientId", e)
-            return ResponseEntity.internalServerError().build()
-        }
+        val client = clientService.getClient(clientId)
+        return ResponseEntity.ok(client.toResponse())
     }
 
     @GetMapping("/{clientId}/accounts")
     fun getClientAccounts(
         @PathVariable clientId: String,
     ): ResponseEntity<List<ClientAccountResponse>> {
-        try {
-            val accounts = clientService.getClientAccounts(clientId)
-            return ResponseEntity.ok(
-                accounts.map {
-                    ClientAccountResponse(
-                        id = it.id,
-                        clientId = it.clientId,
-                        iban = it.iban,
-                        balance = it.balance,
-                        createdAt = it.createdAt,
-                    )
-                },
-            )
-        } catch (e: NoSuchElementException) {
-            logger.warn("Client not found: $clientId", e)
-            return ResponseEntity.notFound().build()
-        } catch (e: Exception) {
-            logger.error("Error getting accounts for client: $clientId", e)
-            return ResponseEntity.internalServerError().build()
-        }
+        val accounts = clientService.getClientAccounts(clientId)
+        return ResponseEntity.ok(accounts.map { it.toResponse() })
     }
 
     @PostMapping
     fun createClient(
         @RequestBody client: ClientCreationRequest,
     ): ResponseEntity<ClientUpdateRequest> {
-        try {
-            val createdClient =
-                clientService.createClient(
-                    CreateClientCommand(
-                        name = client.name,
-                        address = client.address,
-                    ),
-                )
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                ClientUpdateRequest(
-                    id = createdClient.id,
-                    name = createdClient.name,
-                    address = createdClient.address,
+        val createdClient =
+            clientService.createClient(
+                CreateClientCommand(
+                    name = client.name,
+                    address = client.address,
                 ),
             )
-        } catch (e: Exception) {
-            logger.error(e.message, e)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
-        }
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(createdClient.toResponse())
     }
 
     @PutMapping
     fun updateClient(
         @RequestBody client: ClientUpdateRequest,
     ): ResponseEntity<ClientUpdateRequest> {
-        try {
-            val updatedClient =
-                clientService.updateClient(
-                    UpdateClientCommand(
-                        id = client.id,
-                        name = client.name,
-                        address = client.address,
-                    ),
-                )
-
-            return ResponseEntity.status(HttpStatus.OK).body(
-                ClientUpdateRequest(
-                    id = updatedClient.id,
-                    name = updatedClient.name,
-                    address = updatedClient.address,
+        val updatedClient =
+            clientService.updateClient(
+                UpdateClientCommand(
+                    id = client.id,
+                    name = client.name,
+                    address = client.address,
                 ),
             )
-        } catch (e: Exception) {
-            logger.error(e.message, e)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
-        }
+
+        return ResponseEntity.ok(updatedClient.toResponse())
     }
 
     @DeleteMapping("/{clientId}")
     fun deleteClient(
         @PathVariable clientId: String,
     ): ResponseEntity<Void> {
-        try {
-            clientService.deleteClient(clientId)
-            return ResponseEntity.noContent().build()
-        } catch (e: NoSuchElementException) {
-            logger.warn("Client: $clientId not found", e)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
-        }
+        clientService.deleteClient(clientId)
+        return ResponseEntity.noContent().build()
     }
 }
 
@@ -146,3 +88,21 @@ data class ClientAccountResponse(
     val balance: BigDecimal,
     val createdAt: Instant,
 )
+
+private fun Client.toResponse(): ClientUpdateRequest {
+    return ClientUpdateRequest(
+        id = id,
+        name = name,
+        address = address,
+    )
+}
+
+private fun BankAccount.toResponse(): ClientAccountResponse {
+    return ClientAccountResponse(
+        id = id,
+        clientId = clientId,
+        iban = iban,
+        balance = balance,
+        createdAt = createdAt,
+    )
+}

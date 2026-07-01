@@ -32,19 +32,16 @@ class ClientRepositoryImplTest {
     }
 
     @Test
-    fun `should throw when client is not found`() {
+    fun `should return null when client is not found`() {
         // Arrange
         val clientId = "missing-client"
         every { clientJpaRepository.findById(clientId) } returns Optional.empty()
 
         // Act
-        val exception =
-            assertThrows(NoSuchElementException::class.java) {
-                clientRepository.getClientById(clientId)
-            }
+        val result = clientRepository.getClientById(clientId)
 
         // Assert
-        assertThat(exception.message).isEqualTo("Client not found: $clientId")
+        assertThat(result).isNull()
         verify(exactly = 1) { clientJpaRepository.findById(clientId) }
     }
 

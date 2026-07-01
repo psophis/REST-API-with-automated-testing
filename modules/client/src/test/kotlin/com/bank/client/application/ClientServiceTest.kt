@@ -13,6 +13,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -117,16 +118,84 @@ class ClientServiceTest {
     @Test
     fun `should delete client`() {
         // Arrange
-        val clientId = "client-id"
-        every { clientRepository.deleteClientById(clientId) } just runs
-        every { bankAccountRepository.deleteBankAccountByClientId(clientId) } just runs
+        val client = client("client-id")
+        every { clientRepository.getClientById(client.id) } returns client
+        every { clientRepository.deleteClientById(client.id) } just runs
+        every { bankAccountRepository.deleteBankAccountByClientId(client.id) } just runs
 
         // Act
-        clientService.deleteClient(clientId)
+        clientService.deleteClient(client.id)
 
         // Assert
-        verify(exactly = 1) { clientRepository.deleteClientById(clientId) }
-        verify(exactly = 1) { bankAccountRepository.deleteBankAccountByClientId(clientId) }
+        verify(exactly = 1) { clientRepository.getClientById(client.id) }
+        verify(exactly = 1) { clientRepository.deleteClientById(client.id) }
+        verify(exactly = 1) { bankAccountRepository.deleteBankAccountByClientId(client.id) }
+    }
+
+    @Test
+    fun `should throw ClientNotFoundException when client does not exist`() {
+        // Arrange
+        val clientId = "non-existing-client-id"
+        every { clientRepository.getClientById(clientId) } returns null
+
+        // Act & Assert
+        val result =
+            assertThrows(ClientNotFoundException::class.java) {
+                clientService.deleteClient(clientId)
+            }
+
+        assertThat(result.message).isEqualTo("Could not find client with id $clientId")
+        verify(exactly = 1) { clientRepository.getClientById(clientId) }
+    }
+
+    @Test
+    fun `should return empty account list when client has no accounts`() {
+        // Arrange
+        val client = client("client-id")
+        every { clientRepository.getClientById(client.id) } returns client
+        every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns emptyList()
+
+        // Act
+        val result = clientService.getClientAccounts(client.id)
+
+        assertThat(result).isEmpty()
+        verify { clientRepository.getClientById(client.id) }
+        verify { bankAccountRepository.getBankAccountsByClientId(client.id) }
+    }
+
+    @Test
+    fun `should throw ClientNotFoundException when updating non-existing client`() {
+        // Arrange
+        val request = updateClientCommand(id = "non-existing-client-id")
+        every { clientRepository.getClientById(request.id) } returns null
+
+        // Act & Assert
+        val result =
+            assertThrows(ClientNotFoundException::class.java) {
+                clientService.updateClient(request)
+            }
+
+        assertThat(result.message).isEqualTo("Could not find client with id ${request.id}")
+        verify(exactly = 1) { clientRepository.getClientById(request.id) }
+        verify(exactly = 0) { clientRepository.updateClient(any()) }
+    }
+
+    @Test
+    fun `should throw ClientNotFoundException when deleting missing client`() {
+        // Arrange
+        val clientId = "non-existing-client-id"
+        every { clientRepository.getClientById(clientId) } returns null
+
+        // Act & Assert
+        val result =
+            assertThrows(ClientNotFoundException::class.java) {
+                clientService.deleteClient(clientId)
+            }
+
+        assertThat(result.message).isEqualTo("Could not find client with id $clientId")
+        verify(exactly = 1) { clientRepository.getClientById(clientId) }
+        verify(exactly = 0) { clientRepository.deleteClientById(any()) }
+        verify(exactly = 0) { bankAccountRepository.deleteBankAccountByClientId(any()) }
     }
 
     private fun client(id: String) =

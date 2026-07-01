@@ -1,7 +1,7 @@
 package com.bank.client.domain
 
 interface ClientRepository {
-    fun getClientById(clientId: String): Client
+    fun getClientById(clientId: String): Client?
 
     fun createClient(client: Client): Client
 

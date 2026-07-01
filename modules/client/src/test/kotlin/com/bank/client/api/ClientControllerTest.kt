@@ -1,6 +1,7 @@
 package com.bank.client.api
 
 import com.bank.bankaccount.domain.BankAccount
+import com.bank.client.application.ClientNotFoundException
 import com.bank.client.application.ClientService
 import com.bank.client.application.CreateClientCommand
 import com.bank.client.application.UpdateClientCommand
@@ -32,6 +33,7 @@ class ClientControllerTest {
     private val mockMvc: MockMvc =
         MockMvcBuilders
             .standaloneSetup(ClientController(clientService))
+            .setControllerAdvice(ClientExceptionHandler())
             .setMessageConverters(JacksonJsonHttpMessageConverter(jacksonMapperBuilder()))
             .build()
 
@@ -57,7 +59,7 @@ class ClientControllerTest {
     @Test
     fun `should return 404 when client is not found`() {
         val clientId = "missing-client"
-        every { clientService.getClient(clientId) } throws NoSuchElementException("Client not found: $clientId")
+        every { clientService.getClient(clientId) } throws ClientNotFoundException(clientId)
 
         mockMvc
             .perform(get("/api/clients/{clientId}", clientId))
@@ -85,7 +87,7 @@ class ClientControllerTest {
     @Test
     fun `should return 404 when client accounts are not found`() {
         val clientId = "missing-client"
-        every { clientService.getClientAccounts(clientId) } throws NoSuchElementException("Client not found: $clientId")
+        every { clientService.getClientAccounts(clientId) } throws ClientNotFoundException(clientId)
 
         mockMvc
             .perform(get("/api/clients/{clientId}/accounts", clientId))
@@ -197,13 +199,53 @@ class ClientControllerTest {
     @Test
     fun `should return 404 when deleting missing client`() {
         val clientId = "missing-client"
-        every { clientService.deleteClient(clientId) } throws NoSuchElementException("Client not found: $clientId")
+        every { clientService.deleteClient(clientId) } throws ClientNotFoundException(clientId)
 
         mockMvc
             .perform(delete("/api/clients/{clientId}", clientId))
             .andExpect(status().isNotFound)
 
         verify(exactly = 1) { clientService.deleteClient(clientId) }
+    }
+
+    @Test
+    fun `should return 404 when updating missing client`() {
+        // Arrange
+        val request = clientUpdateRequest(id = "missing-client")
+        val command =
+            UpdateClientCommand(
+                id = request.id,
+                name = request.name,
+                address = request.address,
+            )
+        every { clientService.updateClient(command) } throws ClientNotFoundException(request.id)
+
+        // Act
+        mockMvc
+            .perform(
+                put("/api/clients")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "id": "${request.id}",
+                          "name": {
+                            "name": "${request.name?.name}",
+                            "firstName": "${request.name?.firstName}"
+                          },
+                          "address": {
+                            "street": "${request.address?.street}",
+                            "number": "${request.address?.number}",
+                            "zipCode": "${request.address?.zipCode}",
+                            "city": "${request.address?.city}"
+                          }
+                        }
+                        """.trimIndent(),
+                    ),
+            ).andExpect(status().isNotFound)
+
+        // Assert
+        verify(exactly = 1) { clientService.updateClient(command) }
     }
 
     private fun client(id: String = "client-id") =
