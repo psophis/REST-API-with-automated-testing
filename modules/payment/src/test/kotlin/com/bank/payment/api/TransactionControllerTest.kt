@@ -22,6 +22,7 @@ class TransactionControllerTest {
     private val mockMvc: MockMvc =
         MockMvcBuilders
             .standaloneSetup(TransactionController(transactionService))
+            .setControllerAdvice(PaymentExceptionHandler())
             .setMessageConverters(JacksonJsonHttpMessageConverter(jacksonMapperBuilder()))
             .build()
 

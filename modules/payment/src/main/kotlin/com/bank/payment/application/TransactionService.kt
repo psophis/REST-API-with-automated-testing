@@ -9,18 +9,10 @@ class TransactionService(
     private val transactionRepository: TransactionRepository,
 ) {
     fun getTransaction(transactionId: String): Transaction {
-        try {
-            return transactionRepository.getTransactionById(transactionId)
-        } catch (e: Exception) {
-            throw e
-        }
+        return transactionRepository.getTransactionById(transactionId)
     }
 
     fun getAccountTransactions(accountId: String): List<Transaction> {
-        try {
-            return transactionRepository.getTransactionsByAccountId(accountId)
-        } catch (e: Exception) {
-            throw e
-        }
+        return transactionRepository.getTransactionsByAccountId(accountId)
     }
 }
