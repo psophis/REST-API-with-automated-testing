@@ -1,8 +1,7 @@
 package com.bank.bankaccount.api
 
-import com.bank.bankaccount.application.BankAccountNotFoundException
 import com.bank.bankaccount.application.BankAccountService
-import org.slf4j.LoggerFactory
+import com.bank.bankaccount.domain.BankAccount
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -18,30 +17,12 @@ import org.springframework.web.bind.annotation.RestController
 class BankAccountController(
     private val bankAccountService: BankAccountService,
 ) {
-    val logger = LoggerFactory.getLogger(BankAccountController::class.java)
-
     @GetMapping("/{bankAccountId}")
     fun getBankAccount(
         @PathVariable bankAccountId: String,
     ): ResponseEntity<BankAccountDto> {
-        return try {
-            val bankAccount = bankAccountService.getBankAccount(bankAccountId)
-            ResponseEntity.ok(
-                BankAccountDto(
-                    id = bankAccount.id,
-                    clientId = bankAccount.clientId,
-                    iban = bankAccount.iban,
-                    balance = bankAccount.balance,
-                    createdAt = bankAccount.createdAt,
-                ),
-            )
-        } catch (e: BankAccountNotFoundException) {
-            logger.warn("Failed to get account with id {}: {}", bankAccountId, e.message)
-            ResponseEntity.notFound().build()
-        } catch (e: Exception) {
-            logger.error("Error getting account with id {}: {}", bankAccountId, e.message)
-            ResponseEntity.internalServerError().build()
-        }
+        val bankAccount = bankAccountService.getBankAccount(bankAccountId)
+        return ResponseEntity.ok(bankAccount.toDto())
     }
 
     @PostMapping
@@ -52,22 +33,26 @@ class BankAccountController(
             bankAccountService.createBankAccount(
                 request.clientId,
             )
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-            BankAccountDto(
-                id = bankAccount.id,
-                clientId = bankAccount.clientId,
-                iban = bankAccount.iban,
-                balance = bankAccount.balance,
-                createdAt = bankAccount.createdAt,
-            ),
-        )
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(bankAccount.toDto())
     }
 
     @DeleteMapping("/{bankAccountId}")
     fun deleteBankAccount(
         @PathVariable bankAccountId: String,
-    ): ResponseEntity.HeadersBuilder<*> {
+    ): ResponseEntity<Void> {
         bankAccountService.deleteBankAccount(bankAccountId)
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+        return ResponseEntity.noContent().build()
+    }
+
+    private fun BankAccount.toDto(): BankAccountDto {
+        return BankAccountDto(
+            id = this.id,
+            clientId = this.clientId,
+            iban = this.iban,
+            balance = this.balance,
+            createdAt = this.createdAt,
+        )
     }
 }

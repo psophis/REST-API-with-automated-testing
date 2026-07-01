@@ -23,8 +23,10 @@ class BankAccountControllerTest {
     private val mockMvc: MockMvc =
         MockMvcBuilders
             .standaloneSetup(BankAccountController(bankAccountService))
-            .setMessageConverters(JacksonJsonHttpMessageConverter
-                (jacksonMapperBuilder()))
+            .setControllerAdvice(BankAccountExceptionHandler())
+            .setMessageConverters(
+                JacksonJsonHttpMessageConverter(jacksonMapperBuilder()),
+            )
             .build()
 
     @Test
