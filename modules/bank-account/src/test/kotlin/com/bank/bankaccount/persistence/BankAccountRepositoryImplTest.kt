@@ -21,8 +21,8 @@ import java.util.UUID
 
 @DataJpaTest
 @Import(BankAccountRepositoryImpl::class)
-@ContextConfiguration(classes = [AccountRepositoryImplTest.JpaTestConfig::class])
-class AccountRepositoryImplTest {
+@ContextConfiguration(classes = [BankAccountRepositoryImplTest.JpaTestConfig::class])
+class BankAccountRepositoryImplTest {
     @SpringBootConfiguration
     @EnableAutoConfiguration
     @EntityScan("com.bank.bankaccount.persistence")
@@ -30,29 +30,29 @@ class AccountRepositoryImplTest {
     class JpaTestConfig
 
     @Autowired
-    lateinit var accountRepository: BankAccountRepositoryImpl
+    lateinit var bankAccountRepository: BankAccountRepositoryImpl
 
     @Autowired
     lateinit var bankAccountJpaRepository: BankAccountJpaRepository
 
-    val iban = "DE1234567890"
-    val accountId = UUID.randomUUID().toString()
 
     @Test
     fun `should create and load account`() {
         // Arrange
+        val bankAccountId = UUID.randomUUID().toString()
+        val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val bankAccount =
             BankAccount(
-                id = accountId,
+                id = bankAccountId,
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal.ZERO,
                 createdAt = Instant.now(),
             )
-        accountRepository.createBankAccount(bankAccount)
+        bankAccountRepository.createBankAccount(bankAccount)
 
         // Act
-        val loaded = accountRepository.getBankAccountById(accountId)
+        val loaded = bankAccountRepository.getBankAccountById(bankAccountId)
 
         // Assert
         assertEquals(bankAccount.id, loaded.id)
@@ -63,9 +63,11 @@ class AccountRepositoryImplTest {
     @Test
     fun `should find account by iban`() {
         // Arrange
+        val bankAccountId = UUID.randomUUID().toString()
+        val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val entity =
             BankAccountEntity(
-                id = accountId,
+                id = bankAccountId,
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal.ZERO,
@@ -75,17 +77,17 @@ class AccountRepositoryImplTest {
         bankAccountJpaRepository.save(entity)
 
         // Act
-        val result = accountRepository.getBankAccountByIban(iban)
+        val result = bankAccountRepository.getBankAccountByIban(iban)
 
         // Assert
         assertNotNull(result)
-        assertEquals(accountId, result!!.id)
+        assertEquals(bankAccountId, result!!.id)
     }
 
     @Test
     fun `should return null when iban not found`() {
         // Act
-        val result = accountRepository.getBankAccountByIban("UNKNOWN")
+        val result = bankAccountRepository.getBankAccountByIban("UNKNOWN")
 
         // Assert
         assertNull(result)
@@ -94,9 +96,11 @@ class AccountRepositoryImplTest {
     @Test
     fun `should increase account balance`() {
         // Arrange
+        val bankAccountId = UUID.randomUUID().toString()
+        val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val entity =
             BankAccountEntity(
-                id = accountId,
+                id = bankAccountId,
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal("100"),
@@ -106,22 +110,24 @@ class AccountRepositoryImplTest {
         bankAccountJpaRepository.save(entity)
 
         // Act
-        accountRepository.increaseBankAccountBalance(
-            bankAccountId = accountId,
+        bankAccountRepository.increaseBankAccountBalance(
+            bankAccountId = bankAccountId,
             amount = BigDecimal("50"),
         )
 
         // Assert
-        val updated = bankAccountJpaRepository.findById(accountId).get()
+        val updated = bankAccountJpaRepository.findById(bankAccountId).get()
         assertEquals(BigDecimal("150"), updated.balance)
     }
 
     @Test
     fun `should reduce account balance`() {
         // Arrange
+        val bankAccountId = UUID.randomUUID().toString()
+        val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val entity =
             BankAccountEntity(
-                id = accountId,
+                id = bankAccountId,
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal("100"),
@@ -131,22 +137,24 @@ class AccountRepositoryImplTest {
         bankAccountJpaRepository.save(entity)
 
         // Act
-        accountRepository.decreaseBankAccountBalance(
-            bankAccountId = accountId,
+        bankAccountRepository.decreaseBankAccountBalance(
+            bankAccountId = bankAccountId,
             amount = BigDecimal("40"),
         )
 
         // Assert
-        val updated = bankAccountJpaRepository.findById(accountId).get()
+        val updated = bankAccountJpaRepository.findById(bankAccountId).get()
         assertEquals(BigDecimal("60"), updated.balance)
     }
 
     @Test
     fun `should delete account`() {
         // Arrange
+        val bankAccountId = UUID.randomUUID().toString()
+        val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val entity =
             BankAccountEntity(
-                id = accountId,
+                id = bankAccountId,
                 clientId = "client-1",
                 iban = iban,
                 balance = BigDecimal.ZERO,
@@ -156,9 +164,9 @@ class AccountRepositoryImplTest {
         bankAccountJpaRepository.save(entity)
 
         // Act
-        accountRepository.deleteByBankAccountId(accountId)
+        bankAccountRepository.deleteByBankAccountId(bankAccountId)
 
-        val deleted = bankAccountJpaRepository.findById(accountId)
+        val deleted = bankAccountJpaRepository.findById(bankAccountId)
 
         // Assert
         assertTrue(deleted.isEmpty)
@@ -166,9 +174,11 @@ class AccountRepositoryImplTest {
 
     @Test
     fun `should throw exception for negative increase amount`() {
+        val bankAccountId = UUID.randomUUID().toString()
+
         assertThrows(IllegalArgumentException::class.java) {
-            accountRepository.increaseBankAccountBalance(
-                bankAccountId = accountId,
+            bankAccountRepository.increaseBankAccountBalance(
+                bankAccountId = bankAccountId,
                 amount = BigDecimal("-1"),
             )
         }

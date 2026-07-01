@@ -6,43 +6,35 @@ import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
-import javax.security.auth.login.AccountNotFoundException
 
 @Service
 class BankAccountService(
     private val bankAccountRepository: BankAccountRepository,
     private val ibanGenerator: IbanGenerator,
 ) {
-    fun getBankAccount(accountId: String): BankAccount {
-        try {
-            return bankAccountRepository.getBankAccountById(accountId)
-                ?: throw BankAccountNotFoundException(accountId)
-        } catch (e: Exception) {
-            throw e
-        }
+    fun getBankAccount(bankAccountId: String): BankAccount {
+        return bankAccountRepository.getBankAccountById(bankAccountId)
+            ?: throw BankAccountNotFoundException(bankAccountId)
     }
 
     fun createBankAccount(clientId: String): BankAccount {
-        try {
-            val bankAccount =
-                BankAccount(
-                    id = UUID.randomUUID().toString(),
-                    clientId = clientId,
-                    iban = ibanGenerator.generateIban(),
-                    balance = BigDecimal.ZERO,
-                    createdAt = Instant.now(),
-                )
-            return bankAccountRepository.createBankAccount(bankAccount)
-        } catch (e: Exception) {
-            throw e
-        }
+        require(clientId.isNotBlank()) { "ClientId cannot be blank" }
+
+        val bankAccount =
+            BankAccount(
+                id = UUID.randomUUID().toString(),
+                clientId = clientId,
+                iban = ibanGenerator.generateIban(),
+                balance = BigDecimal.ZERO,
+                createdAt = Instant.now(),
+            )
+
+        return bankAccountRepository.createBankAccount(bankAccount)
     }
 
-    fun deleteBankAccount(accountId: String) {
-        try {
-            return bankAccountRepository.deleteByBankAccountId(accountId)
-        } catch (e: Exception) {
-            throw e
-        }
+    fun deleteBankAccount(bankAccountId: String) {
+        require(bankAccountId.isNotBlank()) { "BankAccountId cannot be blank" }
+
+        bankAccountRepository.deleteByBankAccountId(bankAccountId)
     }
 }
