@@ -11,11 +11,11 @@ class BankAccountRepositoryImpl(
     private val bankAccountJpaRepository: BankAccountJpaRepository,
 ) : BankAccountRepository {
     @Transactional(readOnly = true)
-    override fun getBankAccountById(bankAccountId: String): BankAccount =
+    override fun getBankAccountById(bankAccountId: String): BankAccount? =
         bankAccountJpaRepository
             .findById(bankAccountId)
             .map(BankAccountEntity::toDomain)
-            .orElseThrow { NoSuchElementException("Account not found: $bankAccountId") }
+            .orElse(null)
 
     @Transactional(readOnly = true)
     override fun getBankAccountByIban(iban: String): BankAccount? = bankAccountJpaRepository.findByIban(iban)?.toDomain()

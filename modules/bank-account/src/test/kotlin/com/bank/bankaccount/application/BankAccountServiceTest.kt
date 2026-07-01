@@ -128,4 +128,50 @@ class BankAccountServiceTest {
         assertThat(exception.message).isEqualTo("boom")
         verify(exactly = 1) { bankAccountRepository.deleteByBankAccountId(accountId) }
     }
+
+    @Test
+    fun `should throw BankAccountNotFoundException when account does not exist`() {
+        // Arrange
+        val accountId = "non-existent-account-id"
+
+        every { bankAccountRepository.getBankAccountById(accountId) } returns null
+
+        // Act
+        val exception =
+            assertThrows(BankAccountNotFoundException::class.java) {
+                bankAccountService.getBankAccount(accountId)
+            }
+
+        // Assert
+        assertThat(exception.message).isEqualTo("Could not find bank account with id $accountId")
+        verify(exactly = 1) { bankAccountRepository.getBankAccountById(accountId) }
+    }
+
+    @Test
+    fun `should throw exception when client id is blank`() {
+        // Act
+        val exception =
+            assertThrows(IllegalArgumentException::class.java) {
+                bankAccountService.createBankAccount(" ")
+            }
+
+        // Assert
+        assertThat(exception.message).isEqualTo("ClientId cannot be blank")
+        verify(exactly = 0) { ibanGenerator.generateIban() }
+        verify(exactly = 0) { bankAccountRepository.createBankAccount(any()) }
+    }
+
+    @Test
+    fun `should throw exception when bank account id is blank during delete`() {
+        // Act
+        val exception =
+            assertThrows(IllegalArgumentException::class.java) {
+                bankAccountService.deleteBankAccount(" ")
+            }
+
+        // Assert
+        assertThat(exception.message).isEqualTo("BankAccountId cannot be blank")
+        verify(exactly = 0) { bankAccountRepository.deleteByBankAccountId(any()) }
+    }
+
 }

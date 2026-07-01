@@ -4,12 +4,15 @@ import com.bank.bankaccount.application.BankAccountNotFoundException
 import com.bank.bankaccount.application.BankAccountService
 import com.bank.bankaccount.createAccount
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -77,5 +80,35 @@ class BankAccountControllerTest {
             .andExpect(jsonPath("$.balance").value(100.00))
 
         verify(exactly = 1) { bankAccountService.createBankAccount(clientId) }
+    }
+
+    @Test
+    fun `should delete account`() {
+        val account = createAccount(balance = BigDecimal("100.00"))
+        every { bankAccountService.deleteBankAccount(account.id) } just runs
+
+        mockMvc
+            .perform(
+                delete("/api/accounts/{accountId}", account.id)
+                    .contentType(MediaType.APPLICATION_JSON)
+            ).andExpect(status().isNoContent)
+
+        verify(exactly = 1) { bankAccountService.deleteBankAccount(account.id) }
+    }
+
+    @Test
+    fun `should return 400 if request is invalid`() {
+        val clientId = "client-id"
+        every { bankAccountService.createBankAccount(any()) } throws IllegalArgumentException()
+
+        mockMvc
+        .perform(
+            post("/api/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"clientId":"$clientId"}""")
+        )
+            .andExpect(status().isBadRequest)
+
+        verify (exactly = 1) { bankAccountService.createBankAccount(any())  }
     }
 }
