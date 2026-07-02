@@ -75,15 +75,11 @@ class PaymentService(
                 TransactionType.WITHDRAWAL,
             )
 
-        try {
-            transactionRepository.createTransaction(transaction)
-            bankAccountRepository.decreaseBankAccountBalance(
-                bankAccountId = transaction.accountId,
-                amount = transaction.amount,
-            )
-        } catch (e: Exception) {
-            throw RuntimeException("Error withdrawing money", e)
-        }
+        transactionRepository.createTransaction(transaction)
+        bankAccountRepository.decreaseBankAccountBalance(
+            bankAccountId = transaction.accountId,
+            amount = transaction.amount,
+        )
     }
 
     @Transactional
@@ -105,15 +101,11 @@ class PaymentService(
                 TransactionType.DEPOSIT,
             )
 
-        try {
-            transactionRepository.createTransaction(transaction)
-            bankAccountRepository.increaseBankAccountBalance(
-                bankAccountId = transaction.accountId,
-                amount = transaction.amount,
-            )
-        } catch (e: Exception) {
-            throw RuntimeException("Error depositing money", e)
-        }
+        transactionRepository.createTransaction(transaction)
+        bankAccountRepository.increaseBankAccountBalance(
+            bankAccountId = transaction.accountId,
+            amount = transaction.amount,
+        )
     }
 
     private fun createTransaction(
