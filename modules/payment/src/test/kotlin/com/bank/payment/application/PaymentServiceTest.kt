@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.Instant
-import javax.security.auth.login.AccountNotFoundException
 
 class PaymentServiceTest {
     private lateinit var paymentService: PaymentService
@@ -112,7 +111,7 @@ class PaymentServiceTest {
         // Assert
         assertThatThrownBy {
             paymentService.transferMoney("DE1234567890", "DE0987654321", BigDecimal("100.00"))
-        }.isInstanceOf(AccountNotFoundException::class.java)
+        }.isInstanceOf(PaymentAccountNotFoundException::class.java)
             .hasMessage("Account not found for IBAN DE1234567890 or DE0987654321")
     }
 

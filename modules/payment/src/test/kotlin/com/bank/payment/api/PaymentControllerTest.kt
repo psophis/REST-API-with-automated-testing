@@ -1,5 +1,6 @@
 package com.bank.payment.api
 
+import com.bank.payment.application.PaymentAccountNotFoundException
 import com.bank.payment.application.PaymentService
 import com.bank.payment.domain.Transaction
 import com.bank.payment.domain.TransactionType
@@ -19,7 +20,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
 import java.time.Instant
-import javax.security.auth.login.AccountNotFoundException
 
 class PaymentControllerTest {
     private val paymentService = mockk<PaymentService>()
@@ -60,7 +60,7 @@ class PaymentControllerTest {
         val amount = BigDecimal("100.00")
         every {
             paymentService.transferMoney(fromIban, toIban, amount)
-        } throws AccountNotFoundException("Account not found")
+        } throws PaymentAccountNotFoundException("Account not found")
 
         mockMvc
             .perform(
