@@ -7,8 +7,8 @@ import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
 import com.bank.client.domain.ClientName
 import com.bank.client.domain.ClientRepository
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
