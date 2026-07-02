@@ -1,5 +1,6 @@
 package com.bank.payment.api
 
+import com.bank.payment.application.PaymentAccountNotFoundException
 import com.bank.payment.application.PaymentService
 import io.mockk.every
 import io.mockk.mockk
@@ -13,7 +14,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
-import javax.security.auth.login.AccountNotFoundException
 
 class PaymentExceptionHandlerTest {
     private val paymentService = mockk<PaymentService>()
@@ -24,11 +24,10 @@ class PaymentExceptionHandlerTest {
             .setControllerAdvice(PaymentExceptionHandler())
             .setMessageConverters(
                 JacksonJsonHttpMessageConverter(jacksonMapperBuilder()),
-            )
-            .build()
+            ).build()
 
     @Test
-    fun `should return 404 for AccountNotFoundException`() {
+    fun `should return 404 for PaymentAccountNotFoundException`() {
         // Arrange
         val fromIban = "DE1234567890"
         val toIban = "DE0987654321"
@@ -36,7 +35,7 @@ class PaymentExceptionHandlerTest {
 
         every {
             paymentService.transferMoney(fromIban, toIban, amount)
-        } throws AccountNotFoundException("Account not found")
+        } throws PaymentAccountNotFoundException("Account not found")
 
         // Act/Assert
         mockMvc
@@ -44,8 +43,7 @@ class PaymentExceptionHandlerTest {
                 post("/api/payments/transfer")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(transferJson(fromIban, toIban, amount)),
-            )
-            .andExpect(status().isNotFound)
+            ).andExpect(status().isNotFound)
             .andExpect(jsonPath("$.message").value("Account not found"))
     }
 
@@ -66,8 +64,7 @@ class PaymentExceptionHandlerTest {
                 post("/api/payments/transfer")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(transferJson(fromIban, toIban, amount)),
-            )
-            .andExpect(status().isInternalServerError)
+            ).andExpect(status().isInternalServerError)
             .andExpect(jsonPath("$.message").value("boom"))
     }
 

@@ -29,8 +29,7 @@ class BankAccountControllerTest {
             .setControllerAdvice(BankAccountExceptionHandler())
             .setMessageConverters(
                 JacksonJsonHttpMessageConverter(jacksonMapperBuilder()),
-            )
-            .build()
+            ).build()
 
     @Test
     fun `should get account by id`() {
@@ -90,7 +89,7 @@ class BankAccountControllerTest {
         mockMvc
             .perform(
                 delete("/api/accounts/{accountId}", account.id)
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(status().isNoContent)
 
         verify(exactly = 1) { bankAccountService.deleteBankAccount(account.id) }
@@ -102,13 +101,12 @@ class BankAccountControllerTest {
         every { bankAccountService.createBankAccount(any()) } throws IllegalArgumentException()
 
         mockMvc
-        .perform(
-            post("/api/accounts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"clientId":"$clientId"}""")
-        )
-            .andExpect(status().isBadRequest)
+            .perform(
+                post("/api/accounts")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"clientId":"$clientId"}"""),
+            ).andExpect(status().isBadRequest)
 
-        verify (exactly = 1) { bankAccountService.createBankAccount(any())  }
+        verify(exactly = 1) { bankAccountService.createBankAccount(any()) }
     }
 }

@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
-import javax.security.auth.login.AccountNotFoundException
 
 @Service
 class PaymentService(
@@ -25,10 +24,12 @@ class PaymentService(
         val senderAccount = bankAccountRepository.getBankAccountByIban(fromIban)
         val recipientAccount = bankAccountRepository.getBankAccountByIban(toIban)
         if (senderAccount == null && recipientAccount == null) {
-            throw AccountNotFoundException("Account not found for IBAN $fromIban or $toIban")
+            throw PaymentAccountNotFoundException("Account not found for IBAN $fromIban or $toIban")
         }
 
-        val localAccount = senderAccount ?: recipientAccount!!
+        val localAccount =
+            senderAccount ?: recipientAccount
+                ?: throw PaymentAccountNotFoundException("Account not found for $fromIban or $toIban")
         val transaction =
             createTransaction(
                 localAccount.id,
@@ -47,7 +48,7 @@ class PaymentService(
         } else {
             val localRecipient =
                 recipientAccount
-                    ?: throw AccountNotFoundException("Account not found for IBAN $fromIban or $toIban")
+                    ?: throw PaymentAccountNotFoundException("Account not found for IBAN $fromIban or $toIban")
 
             bankAccountRepository.increaseBankAccountBalance(
                 bankAccountId = localRecipient.id,
@@ -64,7 +65,7 @@ class PaymentService(
     ) {
         val iban =
             bankAccountRepository.getBankAccountById(accountId)?.iban
-                ?: throw AccountNotFoundException("Account not found for ID: $accountId")
+                ?: throw PaymentAccountNotFoundException("Account not found for ID: $accountId")
 
         val transaction =
             createTransaction(
@@ -89,7 +90,7 @@ class PaymentService(
     ) {
         val iban =
             bankAccountRepository.getBankAccountById(accountId)?.iban
-                ?: throw AccountNotFoundException("Account not found for ID: $accountId")
+                ?: throw PaymentAccountNotFoundException("Account not found for ID: $accountId")
 
         // TODO sollte das nicht im TransactionService passieren
         val transaction =

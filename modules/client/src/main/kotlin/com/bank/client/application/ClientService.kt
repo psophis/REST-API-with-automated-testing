@@ -7,8 +7,8 @@ import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
 import com.bank.client.domain.ClientName
 import com.bank.client.domain.ClientRepository
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
@@ -17,10 +17,9 @@ class ClientService(
     private val bankAccountRepository: BankAccountRepository,
     private val bankAccountService: BankAccountService,
 ) {
-    fun getClient(clientId: String): Client {
-        return clientRepository.getClientById(clientId)
+    fun getClient(clientId: String): Client =
+        clientRepository.getClientById(clientId)
             ?: throw ClientNotFoundException(clientId)
-    }
 
     fun getClientAccounts(clientId: String): List<BankAccount> {
         getClient(clientId)

@@ -1,8 +1,8 @@
 package com.bank.bankaccount.persistence
 
 import com.bank.bankaccount.domain.BankAccount
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -35,7 +35,6 @@ class BankAccountRepositoryImplTest {
     @Autowired
     lateinit var bankAccountJpaRepository: BankAccountJpaRepository
 
-
     @Test
     fun `should create and load account`() {
         // Arrange
@@ -55,10 +54,10 @@ class BankAccountRepositoryImplTest {
         val loaded = bankAccountRepository.getBankAccountById(bankAccountId)
 
         // Assert
-        assertNotNull(loaded)
-        assertEquals(bankAccount.id, loaded!!.id)
-        assertEquals(bankAccount.clientId, loaded.clientId)
-        assertEquals(bankAccount.iban, loaded.iban)
+        assertThat(loaded).isNotNull
+        assertEquals(bankAccount.id, loaded?.id)
+        assertEquals(bankAccount.clientId, loaded?.clientId)
+        assertEquals(bankAccount.iban, loaded?.iban)
     }
 
     @Test
@@ -81,8 +80,8 @@ class BankAccountRepositoryImplTest {
         val result = bankAccountRepository.getBankAccountByIban(iban)
 
         // Assert
-        assertNotNull(result)
-        assertEquals(bankAccountId, result!!.id)
+        assertThat(result).isNotNull
+        assertEquals(bankAccountId, result?.id)
     }
 
     @Test

@@ -3,8 +3,6 @@ package com.bank.client.api
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.client.application.ClientNotFoundException
 import com.bank.client.application.ClientService
-import com.bank.client.application.CreateClientCommand
-import com.bank.client.application.UpdateClientCommand
 import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
 import com.bank.client.domain.ClientName
@@ -99,11 +97,7 @@ class ClientControllerTest {
     @Test
     fun `should create client`() {
         val request = clientCreationRequest()
-        val command =
-            CreateClientCommand(
-                name = request.name,
-                address = request.address,
-            )
+        val command = request.toCommand()
         val createdClient = client(id = "created-id")
         every { clientService.createClient(command) } returns createdClient
 
@@ -142,12 +136,7 @@ class ClientControllerTest {
     @Test
     fun `should update client`() {
         val request = clientUpdateRequest(id = "client-id")
-        val command =
-            UpdateClientCommand(
-                id = request.id,
-                name = request.name,
-                address = request.address,
-            )
+        val command = request.toCommand()
         val updatedClient = client(id = request.id)
         every { clientService.updateClient(command) } returns updatedClient
 
@@ -212,12 +201,7 @@ class ClientControllerTest {
     fun `should return 404 when updating missing client`() {
         // Arrange
         val request = clientUpdateRequest(id = "missing-client")
-        val command =
-            UpdateClientCommand(
-                id = request.id,
-                name = request.name,
-                address = request.address,
-            )
+        val command = request.toCommand()
         every { clientService.updateClient(command) } throws ClientNotFoundException(request.id)
 
         // Act
@@ -257,15 +241,15 @@ class ClientControllerTest {
 
     private fun clientCreationRequest() =
         ClientCreationRequest(
-            name = clientName(),
-            address = clientAddress(),
+            name = clientNameDto(),
+            address = clientAddressDto(),
         )
 
     private fun clientUpdateRequest(id: String) =
         ClientUpdateRequest(
             id = id,
-            name = clientName(),
-            address = clientAddress(),
+            name = clientNameDto(),
+            address = clientAddressDto(),
         )
 
     private fun clientName() =
@@ -276,6 +260,20 @@ class ClientControllerTest {
 
     private fun clientAddress() =
         ClientAddress(
+            street = "Main Street",
+            number = "1",
+            zipCode = "12345",
+            city = "Berlin",
+        )
+
+    private fun clientNameDto() =
+        ClientNameDto(
+            name = "Doe",
+            firstName = "Jane",
+        )
+
+    private fun clientAddressDto() =
+        ClientAddressDto(
             street = "Main Street",
             number = "1",
             zipCode = "12345",
