@@ -1,7 +1,6 @@
 package com.bank.bankaccount.api
 
 import com.bank.bankaccount.application.BankAccountService
-import com.bank.bankaccount.domain.BankAccount
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -45,13 +44,4 @@ class BankAccountController(
         bankAccountService.deleteBankAccount(bankAccountId)
         return ResponseEntity.noContent().build()
     }
-
-    private fun BankAccount.toDto(): BankAccountDto =
-        BankAccountDto(
-            id = this.id,
-            clientId = this.clientId,
-            iban = this.iban,
-            balance = this.balance,
-            createdAt = this.createdAt,
-        )
 }

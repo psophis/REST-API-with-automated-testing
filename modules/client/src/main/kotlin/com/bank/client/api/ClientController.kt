@@ -1,10 +1,8 @@
 package com.bank.client.api
 
-import com.bank.bankaccount.domain.BankAccount
 import com.bank.client.application.ClientService
 import com.bank.client.application.CreateClientCommand
 import com.bank.client.application.UpdateClientCommand
-import com.bank.client.domain.Client
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -28,7 +26,7 @@ class ClientController(
         @PathVariable clientId: String,
     ): ResponseEntity<ClientUpdateRequest> {
         val client = clientService.getClient(clientId)
-        return ResponseEntity.ok(client.toResponse())
+        return ResponseEntity.ok(client.toDto())
     }
 
     @GetMapping("/{clientId}/accounts")
@@ -36,7 +34,7 @@ class ClientController(
         @PathVariable clientId: String,
     ): ResponseEntity<List<ClientAccountResponse>> {
         val accounts = clientService.getClientAccounts(clientId)
-        return ResponseEntity.ok(accounts.map { it.toResponse() })
+        return ResponseEntity.ok(accounts.map { it.toDto() })
     }
 
     @PostMapping
@@ -53,7 +51,7 @@ class ClientController(
 
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(createdClient.toResponse())
+            .body(createdClient.toDto())
     }
 
     @PutMapping
@@ -69,7 +67,7 @@ class ClientController(
                 ),
             )
 
-        return ResponseEntity.ok(updatedClient.toResponse())
+        return ResponseEntity.ok(updatedClient.toDto())
     }
 
     @DeleteMapping("/{clientId}")
@@ -88,19 +86,3 @@ data class ClientAccountResponse(
     val balance: BigDecimal,
     val createdAt: Instant,
 )
-
-private fun Client.toResponse(): ClientUpdateRequest =
-    ClientUpdateRequest(
-        id = id,
-        name = name,
-        address = address,
-    )
-
-private fun BankAccount.toResponse(): ClientAccountResponse =
-    ClientAccountResponse(
-        id = id,
-        clientId = clientId,
-        iban = iban,
-        balance = balance,
-        createdAt = createdAt,
-    )
