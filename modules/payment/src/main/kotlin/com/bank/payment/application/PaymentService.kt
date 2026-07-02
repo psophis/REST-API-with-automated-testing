@@ -27,7 +27,9 @@ class PaymentService(
             throw PaymentAccountNotFoundException("Account not found for IBAN $fromIban or $toIban")
         }
 
-        val localAccount = senderAccount ?: recipientAccount!!
+        val localAccount =
+            senderAccount ?: recipientAccount
+            ?: throw PaymentAccountNotFoundException("Account not found for $fromIban or $toIban")
         val transaction =
             createTransaction(
                 localAccount.id,
