@@ -1,8 +1,6 @@
 package com.bank.client.api
 
 import com.bank.client.application.ClientService
-import com.bank.client.application.CreateClientCommand
-import com.bank.client.application.UpdateClientCommand
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -43,10 +41,7 @@ class ClientController(
     ): ResponseEntity<ClientUpdateRequest> {
         val createdClient =
             clientService.createClient(
-                CreateClientCommand(
-                    name = client.name,
-                    address = client.address,
-                ),
+                client.toCommand(),
             )
 
         return ResponseEntity
@@ -60,11 +55,7 @@ class ClientController(
     ): ResponseEntity<ClientUpdateRequest> {
         val updatedClient =
             clientService.updateClient(
-                UpdateClientCommand(
-                    id = client.id,
-                    name = client.name,
-                    address = client.address,
-                ),
+                client.toCommand(),
             )
 
         return ResponseEntity.ok(updatedClient.toDto())
