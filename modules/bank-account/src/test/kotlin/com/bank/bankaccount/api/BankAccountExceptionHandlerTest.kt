@@ -22,8 +22,7 @@ class BankAccountExceptionHandlerTest {
             .setControllerAdvice(BankAccountExceptionHandler())
             .setMessageConverters(
                 JacksonJsonHttpMessageConverter(jacksonMapperBuilder()),
-            )
-            .build()
+            ).build()
 
     @Test
     fun `should return 404 for BankAccountNotFoundException`() {
@@ -44,7 +43,6 @@ class BankAccountExceptionHandlerTest {
                 post("/api/accounts")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"clientId":""}"""),
-            )
-            .andExpect(status().isBadRequest)
+            ).andExpect(status().isBadRequest)
     }
 }

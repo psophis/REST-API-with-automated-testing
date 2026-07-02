@@ -17,10 +17,9 @@ class ClientService(
     private val bankAccountRepository: BankAccountRepository,
     private val bankAccountService: BankAccountService,
 ) {
-    fun getClient(clientId: String): Client {
-        return clientRepository.getClientById(clientId)
+    fun getClient(clientId: String): Client =
+        clientRepository.getClientById(clientId)
             ?: throw ClientNotFoundException(clientId)
-    }
 
     fun getClientAccounts(clientId: String): List<BankAccount> {
         getClient(clientId)

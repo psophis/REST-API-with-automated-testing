@@ -89,20 +89,18 @@ data class ClientAccountResponse(
     val createdAt: Instant,
 )
 
-private fun Client.toResponse(): ClientUpdateRequest {
-    return ClientUpdateRequest(
+private fun Client.toResponse(): ClientUpdateRequest =
+    ClientUpdateRequest(
         id = id,
         name = name,
         address = address,
     )
-}
 
-private fun BankAccount.toResponse(): ClientAccountResponse {
-    return ClientAccountResponse(
+private fun BankAccount.toResponse(): ClientAccountResponse =
+    ClientAccountResponse(
         id = id,
         clientId = clientId,
         iban = iban,
         balance = balance,
         createdAt = createdAt,
     )
-}

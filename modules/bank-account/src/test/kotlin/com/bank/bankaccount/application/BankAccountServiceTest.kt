@@ -173,5 +173,4 @@ class BankAccountServiceTest {
         assertThat(exception.message).isEqualTo("BankAccountId cannot be blank")
         verify(exactly = 0) { bankAccountRepository.deleteByBankAccountId(any()) }
     }
-
 }

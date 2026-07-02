@@ -45,6 +45,7 @@ class PaymentIntegrationTest {
     fun cleanDatabase() {
         transactionJpaRepository.deleteAll()
         bankAccountJpaRepository.deleteAll()
+        clientJpaRepository.deleteAll()
     }
 
     @Test
@@ -60,7 +61,7 @@ class PaymentIntegrationTest {
                     number = "45",
                     city = "Berlin",
                     zipCode = "12345",
-                )
+                ),
             )
         val account =
             bankAccountJpaRepository.save(
@@ -108,7 +109,7 @@ class PaymentIntegrationTest {
                     number = "45",
                     city = "Berlin",
                     zipCode = "12345",
-                )
+                ),
             )
         val account =
             bankAccountJpaRepository.save(
@@ -156,7 +157,7 @@ class PaymentIntegrationTest {
                     number = "45",
                     city = "Berlin",
                     zipCode = "12345",
-                )
+                ),
             )
         val account =
             bankAccountJpaRepository.save(
@@ -205,7 +206,7 @@ class PaymentIntegrationTest {
                     number = "45",
                     city = "Berlin",
                     zipCode = "12345",
-                )
+                ),
             )
         val account =
             bankAccountJpaRepository.save(

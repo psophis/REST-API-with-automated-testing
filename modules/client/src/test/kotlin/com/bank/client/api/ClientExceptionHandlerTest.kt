@@ -34,5 +34,4 @@ class ClientExceptionHandlerTest {
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.message").value("Could not find client with id $clientId"))
     }
-
 }

@@ -24,8 +24,7 @@ class PaymentExceptionHandlerTest {
             .setControllerAdvice(PaymentExceptionHandler())
             .setMessageConverters(
                 JacksonJsonHttpMessageConverter(jacksonMapperBuilder()),
-            )
-            .build()
+            ).build()
 
     @Test
     fun `should return 404 for AccountNotFoundException`() {
@@ -44,8 +43,7 @@ class PaymentExceptionHandlerTest {
                 post("/api/payments/transfer")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(transferJson(fromIban, toIban, amount)),
-            )
-            .andExpect(status().isNotFound)
+            ).andExpect(status().isNotFound)
             .andExpect(jsonPath("$.message").value("Account not found"))
     }
 
@@ -66,8 +64,7 @@ class PaymentExceptionHandlerTest {
                 post("/api/payments/transfer")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(transferJson(fromIban, toIban, amount)),
-            )
-            .andExpect(status().isInternalServerError)
+            ).andExpect(status().isInternalServerError)
             .andExpect(jsonPath("$.message").value("boom"))
     }
 

@@ -9,22 +9,16 @@ import javax.security.auth.login.AccountNotFoundException
 @RestControllerAdvice(assignableTypes = [PaymentController::class, TransactionController::class])
 class PaymentExceptionHandler {
     @ExceptionHandler(AccountNotFoundException::class)
-    fun handleAccountNotFound(
-        exception: AccountNotFoundException,
-    ): ResponseEntity<ErrorResponse> {
-        return ResponseEntity
+    fun handleAccountNotFound(exception: AccountNotFoundException): ResponseEntity<ErrorResponse> =
+        ResponseEntity
             .status(HttpStatus.NOT_FOUND)
             .body(ErrorResponse(exception.message ?: "Account not found"))
-    }
 
     @ExceptionHandler(Exception::class)
-    fun handleException(
-        exception: Exception,
-    ): ResponseEntity<ErrorResponse> {
-        return ResponseEntity
+    fun handleException(exception: Exception): ResponseEntity<ErrorResponse> =
+        ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse(exception.message ?: "Internal server error"))
-    }
 
     data class ErrorResponse(
         val message: String,

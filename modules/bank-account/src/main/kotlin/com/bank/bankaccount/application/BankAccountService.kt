@@ -12,10 +12,9 @@ class BankAccountService(
     private val bankAccountRepository: BankAccountRepository,
     private val ibanGenerator: IbanGenerator,
 ) {
-    fun getBankAccount(bankAccountId: String): BankAccount {
-        return bankAccountRepository.getBankAccountById(bankAccountId)
+    fun getBankAccount(bankAccountId: String): BankAccount =
+        bankAccountRepository.getBankAccountById(bankAccountId)
             ?: throw BankAccountNotFoundException(bankAccountId)
-    }
 
     fun createBankAccount(clientId: String): BankAccount {
         require(clientId.isNotBlank()) { "ClientId cannot be blank" }

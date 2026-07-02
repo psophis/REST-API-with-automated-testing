@@ -8,11 +8,7 @@ import org.springframework.stereotype.Service
 class TransactionService(
     private val transactionRepository: TransactionRepository,
 ) {
-    fun getTransaction(transactionId: String): Transaction {
-        return transactionRepository.getTransactionById(transactionId)
-    }
+    fun getTransaction(transactionId: String): Transaction = transactionRepository.getTransactionById(transactionId)
 
-    fun getAccountTransactions(accountId: String): List<Transaction> {
-        return transactionRepository.getTransactionsByAccountId(accountId)
-    }
+    fun getAccountTransactions(accountId: String): List<Transaction> = transactionRepository.getTransactionsByAccountId(accountId)
 }

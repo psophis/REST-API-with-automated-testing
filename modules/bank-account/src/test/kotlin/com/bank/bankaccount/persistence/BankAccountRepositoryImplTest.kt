@@ -35,7 +35,6 @@ class BankAccountRepositoryImplTest {
     @Autowired
     lateinit var bankAccountJpaRepository: BankAccountJpaRepository
 
-
     @Test
     fun `should create and load account`() {
         // Arrange

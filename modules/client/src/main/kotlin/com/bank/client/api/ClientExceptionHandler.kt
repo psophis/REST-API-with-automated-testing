@@ -9,15 +9,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice
 class ClientExceptionHandler {
     @ExceptionHandler(ClientNotFoundException::class)
-    fun handleClientNotFound(
-        exception: ClientNotFoundException,
-    ): ResponseEntity<ErrorResponse> {
-        return ResponseEntity
+    fun handleClientNotFound(exception: ClientNotFoundException): ResponseEntity<ErrorResponse> =
+        ResponseEntity
             .status(HttpStatus.NOT_FOUND)
             .body(
                 ErrorResponse(exception.message ?: "Client not found"),
             )
-    }
 
     data class ErrorResponse(
         val message: String,

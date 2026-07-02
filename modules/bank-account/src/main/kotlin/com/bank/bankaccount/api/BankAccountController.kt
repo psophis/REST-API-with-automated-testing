@@ -46,13 +46,12 @@ class BankAccountController(
         return ResponseEntity.noContent().build()
     }
 
-    private fun BankAccount.toDto(): BankAccountDto {
-        return BankAccountDto(
+    private fun BankAccount.toDto(): BankAccountDto =
+        BankAccountDto(
             id = this.id,
             clientId = this.clientId,
             iban = this.iban,
             balance = this.balance,
             createdAt = this.createdAt,
         )
-    }
 }
