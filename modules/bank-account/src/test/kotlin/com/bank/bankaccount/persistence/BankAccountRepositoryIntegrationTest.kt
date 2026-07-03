@@ -21,8 +21,8 @@ import java.util.UUID
 
 @DataJpaTest
 @Import(BankAccountRepositoryImpl::class)
-@ContextConfiguration(classes = [BankAccountRepositoryImplTest.JpaTestConfig::class])
-class BankAccountRepositoryImplTest {
+@ContextConfiguration(classes = [BankAccountRepositoryIntegrationTest.JpaTestConfig::class])
+class BankAccountRepositoryIntegrationTest {
     @SpringBootConfiguration
     @EnableAutoConfiguration
     @EntityScan("com.bank.bankaccount.persistence")
