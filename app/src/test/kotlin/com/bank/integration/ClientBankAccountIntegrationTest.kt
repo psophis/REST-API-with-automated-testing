@@ -89,7 +89,7 @@ class ClientBankAccountIntegrationTest{
                 id = UUID.randomUUID().toString(),
                 clientId = client.id,
                 iban = "123456789",
-                balance = BigDecimal("1000"),
+                balance = BigDecimal.ZERO,
                 createdAt = Instant.now(),
             )
         bankAccountJpaRepository.save(bankAccount)

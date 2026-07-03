@@ -198,6 +198,30 @@ class ClientServiceTest {
         verify(exactly = 0) { bankAccountRepository.deleteBankAccountByClientId(any()) }
     }
 
+
+    @Test
+    fun `should throw ClientHasNonZeroBalanceException when deleting client with non-zero balance`() {
+        // Arrange
+        val client = client("client-id")
+        every { clientRepository.getClientById(client.id) } returns client
+        every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns
+                listOf(account(client.id).copy(balance = BigDecimal("100")))
+
+        // Act & Assert
+        val result =
+            assertThrows(ClientHasNonZeroBalanceException::class.java) {
+                clientService.deleteClient(client.id)
+            }
+        assertThat(result.message).isEqualTo(
+            "Could not delete client with id ${client.id} because at least one bank account has a non-zero balance"
+        )
+
+        verify(exactly = 1) { clientRepository.getClientById(client.id) }
+        verify(exactly = 1) { bankAccountRepository.getBankAccountsByClientId(client.id) }
+        verify(exactly = 0) { bankAccountRepository.deleteBankAccountByClientId(any()) }
+        verify(exactly = 0) { clientRepository.deleteClientById(any()) }
+    }
+
     private fun client(id: String) =
         Client(
             id = id,
