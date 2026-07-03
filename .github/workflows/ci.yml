@@ -43,7 +43,6 @@ jobs:
       - name: Convert JUnit reports to CTRF
         if: ${{ !cancelled() }}
         run: npx junit-to-ctrf "**/build/test-results/test/TEST-*.xml"
-        reporter: java-junit
 
       - name: Publish Test Report
         uses: ctrf-io/github-test-reporter@v1
