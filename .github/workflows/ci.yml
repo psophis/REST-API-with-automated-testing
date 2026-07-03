@@ -42,7 +42,7 @@ jobs:
         run: ./gradlew test
 
       - name: Publish Test Coverage Report
-        uses: madrapps/jacoco-report@v1.8.0 # v1.8.0
+        uses: madrapps/jacoco-report@e51ce1f46f7f8b5331593f935e59cbaf44b84920 # v1.8.0
         if: ${{ !cancelled() }}
         with:
           paths: |
@@ -59,7 +59,7 @@ jobs:
         run: npx junit-to-ctrf "**/build/test-results/test/TEST-*.xml"
 
       - name: Publish Test Report
-        uses: ctrf-io/github-test-reporter@v1
+        uses: ctrf-io/github-test-reporter@e500b992f936420eb633c91644cf10d4d71df700
         if: ${{ !cancelled() }}
         with:
           report-path: "./ctrf/*.json"
