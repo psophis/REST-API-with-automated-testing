@@ -21,6 +21,25 @@ subprojects {
         apply(plugin = "org.jetbrains.kotlin.jvm")
         apply(plugin = "org.jetbrains.kotlin.plugin.spring")
         apply(plugin = "org.jlleitschuh.gradle.ktlint")
+        apply(plugin = "jacoco")
+
+        configure<JacocoPluginExtension> {
+            toolVersion = "0.8.14"
+        }
+
+        tasks.withType<Test> {
+            useJUnitPlatform()
+            finalizedBy(tasks.named("jacocoTestReport"))
+        }
+
+        tasks.named<JacocoReport>("jacocoTestReport") {
+            dependsOn(tasks.withType<Test>())
+
+            reports {
+                xml.required.set(true)
+                html.required.set(true)
+            }
+        }
 
         extensions.configure<JavaPluginExtension> {
             toolchain {
