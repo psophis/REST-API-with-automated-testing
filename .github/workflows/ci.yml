@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
       checks: write
       pull-requests: write
 
@@ -52,7 +53,7 @@ jobs:
           summary-report: true
           failed-report: true
           slowest-report: true
-          flaky-rate-report: true
+          flaky-rate-report: false
           upload-artifact: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
