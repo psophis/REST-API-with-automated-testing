@@ -25,6 +25,7 @@ jobs:
     permissions:
       contents: read
       checks: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -39,10 +40,20 @@ jobs:
       - name: Run Tests
         run: ./gradlew test
 
-      - name: Test Report
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
+      - name: Convert JUnit reports to CTRF
+        if: ${{ !cancelled() }}
+        run: npx junit-to-ctrf "**/build/test-results/test/TEST-*.xml"
+        reporter: java-junit
+
+      - name: Publish Test Report
+        uses: ctrf-io/github-test-reporter@v1
         if: ${{ !cancelled() }}
         with:
-          name: Tests
-          path: '**/build/test-results/test/TEST-*.xml'
-          reporter: java-junit
+          report-path: "./ctrf/*.json"
+          summary-report: true
+          failed-report: true
+          slowest-report: true
+          flaky-rate-report: true
+          upload-artifact: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
