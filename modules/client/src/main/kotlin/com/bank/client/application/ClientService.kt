@@ -78,7 +78,7 @@ class ClientService(
             throw ClientHasNonZeroBalanceException(clientId)
         }
 
-        bankAccountRepository.deleteBankAccountByClientId(clientId)
+        bankAccountRepository.deleteBankAccountsByClientId(clientId)
         clientRepository.getClientById(clientId) ?: throw ClientNotFoundException(clientId)
         clientRepository.deleteClientById(clientId)
     }

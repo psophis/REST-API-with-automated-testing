@@ -121,7 +121,7 @@ class ClientServiceTest {
         val client = client("client-id")
         every { clientRepository.getClientById(client.id) } returns client
         every { clientRepository.deleteClientById(client.id) } just runs
-        every { bankAccountRepository.deleteBankAccountByClientId(client.id) } just runs
+        every { bankAccountRepository.deleteBankAccountsByClientId(client.id) } just runs
 
         // Act
         clientService.deleteClient(client.id)
@@ -129,7 +129,7 @@ class ClientServiceTest {
         // Assert
         verify(exactly = 1) { clientRepository.getClientById(client.id) }
         verify(exactly = 1) { clientRepository.deleteClientById(client.id) }
-        verify(exactly = 1) { bankAccountRepository.deleteBankAccountByClientId(client.id) }
+        verify(exactly = 1) { bankAccountRepository.deleteBankAccountsByClientId(client.id) }
     }
 
     @Test
@@ -195,7 +195,7 @@ class ClientServiceTest {
         assertThat(result.message).isEqualTo("Could not find client with id $clientId")
         verify(exactly = 1) { clientRepository.getClientById(clientId) }
         verify(exactly = 0) { clientRepository.deleteClientById(any()) }
-        verify(exactly = 0) { bankAccountRepository.deleteBankAccountByClientId(any()) }
+        verify(exactly = 0) { bankAccountRepository.deleteBankAccountsByClientId(any()) }
     }
 
 
@@ -218,7 +218,7 @@ class ClientServiceTest {
 
         verify(exactly = 1) { clientRepository.getClientById(client.id) }
         verify(exactly = 1) { bankAccountRepository.getBankAccountsByClientId(client.id) }
-        verify(exactly = 0) { bankAccountRepository.deleteBankAccountByClientId(any()) }
+        verify(exactly = 0) { bankAccountRepository.deleteBankAccountsByClientId(any()) }
         verify(exactly = 0) { clientRepository.deleteClientById(any()) }
     }
 

@@ -341,7 +341,7 @@ class BankAccountRepositoryIntegrationTest {
         bankAccountJpaRepository.save(otherClientAccount)
 
         // Act
-        bankAccountRepository.deleteBankAccountByClientId(clientId)
+        bankAccountRepository.deleteBankAccountsByClientId(clientId)
 
         // Assert
         assertTrue(bankAccountJpaRepository.findById(firstAccount.id).isEmpty)
@@ -364,7 +364,7 @@ class BankAccountRepositoryIntegrationTest {
         bankAccountJpaRepository.save(entity)
 
         // Act
-        bankAccountRepository.deleteBankAccountByClientId("unknown-client")
+        bankAccountRepository.deleteBankAccountsByClientId("unknown-client")
 
         // Assert
         assertTrue(bankAccountJpaRepository.findById(entity.id).isPresent)
