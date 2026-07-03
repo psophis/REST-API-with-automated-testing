@@ -54,6 +54,10 @@ jobs:
           failed-report: true
           slowest-report: true
           flaky-rate-report: false
+          pull-request: true
+          update-comment: true
           upload-artifact: true
+          status-check: true
+          status-check-name: "Test Report"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
