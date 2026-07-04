@@ -104,7 +104,16 @@ class BankAccountServiceTest {
     fun `should delete account by account id`() {
         // Arrange
         val accountId = "account-id"
-
+        val account =
+            BankAccount(
+                id = "account-id",
+                clientId = "client-id",
+                iban = "DE0123456789",
+                balance = BigDecimal.ZERO,
+                createdAt = Instant.now(),
+            )
+        every { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) } just runs
+        every { bankAccountRepository.getBankAccountById(accountId)} returns account
         every { bankAccountRepository.deleteByBankAccountId(accountId) } just runs
 
         // Act
@@ -112,13 +121,25 @@ class BankAccountServiceTest {
 
         // Assert
         verify(exactly = 1) { bankAccountRepository.deleteByBankAccountId(accountId) }
+        verify(exactly = 1) { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) }
+        verify(exactly = 1) { bankAccountRepository.deleteByBankAccountId(accountId) }
     }
 
     @Test
     fun `should throw RuntimeException when account deletion fails`() {
         // Arrange
         val accountId = "account-id"
+        val account =
+            BankAccount(
+                id = "account-id",
+                clientId = "client-id",
+                iban = "DE0123456789",
+                balance = BigDecimal.ZERO,
+                createdAt = Instant.now(),
+            )
 
+        every { bankAccountRepository.getBankAccountById(accountId)} returns account
+        every { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) } just runs
         every { bankAccountRepository.deleteByBankAccountId(accountId) } throws RuntimeException("boom")
 
         // Act
@@ -129,6 +150,8 @@ class BankAccountServiceTest {
 
         // Assert
         assertThat(exception.message).isEqualTo("boom")
+        verify(exactly = 1) { bankAccountRepository.getBankAccountById(accountId) }
+        verify(exactly = 1) { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) }
         verify(exactly = 1) { bankAccountRepository.deleteByBankAccountId(accountId) }
     }
 

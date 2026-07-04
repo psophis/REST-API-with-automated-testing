@@ -26,7 +26,7 @@ class TransactionRepositoryImpl(
 
     @Transactional
     override fun deleteTransactionsByBankAccountId(bankAccountId: String) {
-        transactionJpaRepository.deleteAllByBankAccountId(bankAccountId)
+        transactionJpaRepository.deleteAllByAccountId(bankAccountId)
     }
 }
 
