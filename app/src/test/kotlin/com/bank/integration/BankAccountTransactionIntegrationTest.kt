@@ -43,6 +43,7 @@ class BankAccountTransactionIntegrationTest {
     fun cleanDatabase() {
         bankAccountJpaRepository.deleteAll()
         transactionJpaRepository.deleteAll()
+        clientJpaRepository.deleteAll()
     }
 
     @Test
@@ -85,7 +86,17 @@ class BankAccountTransactionIntegrationTest {
 
         assertThat(bankAccountJpaRepository.findById(bankAccount.id)).isEmpty
         assertThat(transactionJpaRepository.findById(transaction.id)).isEmpty
-        assertThat(clientJpaRepository.findById(client.id)).isNotEmpty
+
+        val clientResult = clientJpaRepository.findById(client.id)
+        assertThat(clientResult).isPresent
+        val savedClient = clientResult.orElseThrow()
+        assertThat(savedClient.id).isEqualTo(client.id)
+        assertThat(savedClient.lastName).isEqualTo(client.lastName)
+        assertThat(savedClient.firstName).isEqualTo(client.firstName)
+        assertThat(savedClient.street).isEqualTo(client.street)
+        assertThat(savedClient.number).isEqualTo(client.number)
+        assertThat(savedClient.city).isEqualTo(client.city)
+        assertThat(savedClient.zipCode).isEqualTo(client.zipCode)
     }
 
     companion object {
