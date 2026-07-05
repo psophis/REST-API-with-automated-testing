@@ -1,5 +1,6 @@
 package com.bank.payment.persistence
 
+import com.bank.bankaccount.domain.BankAccountTransactionRepository
 import com.bank.payment.domain.Transaction
 import com.bank.payment.domain.TransactionRepository
 import org.springframework.stereotype.Repository
@@ -8,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 class TransactionRepositoryImpl(
     private val transactionJpaRepository: TransactionJpaRepository,
-) : TransactionRepository {
+) : TransactionRepository, BankAccountTransactionRepository {
     @Transactional(readOnly = true)
     override fun getTransactionById(id: String): Transaction =
         transactionJpaRepository
@@ -22,6 +23,11 @@ class TransactionRepositoryImpl(
 
     @Transactional
     override fun createTransaction(transaction: Transaction): Transaction = transactionJpaRepository.save(transaction.toEntity()).toDomain()
+
+    @Transactional
+    override fun deleteTransactionsByBankAccountId(bankAccountId: String) {
+        transactionJpaRepository.deleteAllByAccountId(bankAccountId)
+    }
 }
 
 private fun TransactionEntity.toDomain(): Transaction =

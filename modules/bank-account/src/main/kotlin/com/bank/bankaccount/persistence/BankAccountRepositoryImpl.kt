@@ -67,7 +67,7 @@ class BankAccountRepositoryImpl(
     }
 
     @Transactional
-    override fun deleteBankAccountByClientId(clientId: String) {
+    override fun deleteBankAccountsByClientId(clientId: String) {
         bankAccountJpaRepository.findAllByClientId(clientId).forEach {
             bankAccountJpaRepository.delete(it)
         }

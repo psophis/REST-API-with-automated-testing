@@ -2,6 +2,7 @@ package com.bank.bankaccount.application
 
 import com.bank.bankaccount.domain.BankAccount
 import com.bank.bankaccount.domain.BankAccountRepository
+import com.bank.bankaccount.domain.BankAccountTransactionRepository
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -17,14 +18,16 @@ import kotlin.test.assertEquals
 
 class BankAccountServiceTest {
     private lateinit var bankAccountRepository: BankAccountRepository
+    private lateinit var bankAccountTransactionRepository: BankAccountTransactionRepository
     private lateinit var ibanGenerator: IbanGenerator
     private lateinit var bankAccountService: BankAccountService
 
     @BeforeEach
     fun setup() {
         bankAccountRepository = mockk()
+        bankAccountTransactionRepository = mockk()
         ibanGenerator = mockk()
-        bankAccountService = BankAccountService(bankAccountRepository, ibanGenerator)
+        bankAccountService = BankAccountService(bankAccountRepository, bankAccountTransactionRepository, ibanGenerator)
     }
 
     @Test
@@ -101,7 +104,16 @@ class BankAccountServiceTest {
     fun `should delete account by account id`() {
         // Arrange
         val accountId = "account-id"
-
+        val account =
+            BankAccount(
+                id = "account-id",
+                clientId = "client-id",
+                iban = "DE0123456789",
+                balance = BigDecimal.ZERO,
+                createdAt = Instant.now(),
+            )
+        every { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) } just runs
+        every { bankAccountRepository.getBankAccountById(accountId)} returns account
         every { bankAccountRepository.deleteByBankAccountId(accountId) } just runs
 
         // Act
@@ -109,13 +121,25 @@ class BankAccountServiceTest {
 
         // Assert
         verify(exactly = 1) { bankAccountRepository.deleteByBankAccountId(accountId) }
+        verify(exactly = 1) { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) }
+        verify(exactly = 1) { bankAccountRepository.deleteByBankAccountId(accountId) }
     }
 
     @Test
-    fun `should throw exception when account deletion fails`() {
+    fun `should throw RuntimeException when account deletion fails`() {
         // Arrange
         val accountId = "account-id"
+        val account =
+            BankAccount(
+                id = "account-id",
+                clientId = "client-id",
+                iban = "DE0123456789",
+                balance = BigDecimal.ZERO,
+                createdAt = Instant.now(),
+            )
 
+        every { bankAccountRepository.getBankAccountById(accountId)} returns account
+        every { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) } just runs
         every { bankAccountRepository.deleteByBankAccountId(accountId) } throws RuntimeException("boom")
 
         // Act
@@ -126,6 +150,8 @@ class BankAccountServiceTest {
 
         // Assert
         assertThat(exception.message).isEqualTo("boom")
+        verify(exactly = 1) { bankAccountRepository.getBankAccountById(accountId) }
+        verify(exactly = 1) { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) }
         verify(exactly = 1) { bankAccountRepository.deleteByBankAccountId(accountId) }
     }
 
@@ -148,14 +174,12 @@ class BankAccountServiceTest {
     }
 
     @Test
-    fun `should throw exception when client id is blank`() {
-        // Act
+    fun `should throw exception when client id is blank during creation`() {
         val exception =
             assertThrows(IllegalArgumentException::class.java) {
                 bankAccountService.createBankAccount(" ")
             }
 
-        // Assert
         assertThat(exception.message).isEqualTo("ClientId cannot be blank")
         verify(exactly = 0) { ibanGenerator.generateIban() }
         verify(exactly = 0) { bankAccountRepository.createBankAccount(any()) }
@@ -163,14 +187,40 @@ class BankAccountServiceTest {
 
     @Test
     fun `should throw exception when bank account id is blank during delete`() {
-        // Act
         val exception =
             assertThrows(IllegalArgumentException::class.java) {
                 bankAccountService.deleteBankAccount(" ")
             }
 
-        // Assert
         assertThat(exception.message).isEqualTo("BankAccountId cannot be blank")
         verify(exactly = 0) { bankAccountRepository.deleteByBankAccountId(any()) }
+    }
+
+    @Test
+    fun `should throw BankAccountHasNonZeroBalanceException during deletion when balance is non-zero`() {
+        // Arrange
+        val accountId = "account-id"
+        val account =
+            BankAccount(
+                id = accountId,
+                clientId = "client-id",
+                iban = "DE1234567890",
+                balance = BigDecimal("100.00"),
+                createdAt = Instant.now(),
+            )
+        every { bankAccountRepository.getBankAccountById(accountId) } returns account
+        every { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) } just runs
+        every { bankAccountRepository.deleteByBankAccountId(accountId) } just runs
+
+        // Act
+        val exception =
+            assertThrows(BankAccountHasNonZeroBalanceException::class.java) {
+                bankAccountService.deleteBankAccount(accountId)
+            }
+
+        assertThat(exception.message).isEqualTo("Bank account with id $accountId has non-zero balance and cannot be deleted")
+        verify(exactly = 1) { bankAccountRepository.getBankAccountById(accountId) }
+        verify(exactly = 0) { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) }
+        verify(exactly = 0) { bankAccountRepository.deleteByBankAccountId(accountId) }
     }
 }

@@ -23,5 +23,5 @@ interface BankAccountRepository {
 
     fun deleteByBankAccountId(bankAccountId: String)
 
-    fun deleteBankAccountByClientId(clientId: String)
+    fun deleteBankAccountsByClientId(clientId: String)
 }

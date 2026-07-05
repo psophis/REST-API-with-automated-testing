@@ -9,6 +9,7 @@ import com.bank.client.domain.ClientName
 import com.bank.client.domain.ClientRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.util.UUID
 
 @Service
@@ -71,7 +72,14 @@ class ClientService(
     @Transactional
     fun deleteClient(clientId: String) {
         clientRepository.getClientById(clientId) ?: throw ClientNotFoundException(clientId)
+
+        val accounts = bankAccountRepository.getBankAccountsByClientId(clientId)
+        if (accounts.any() { it.balance.compareTo(BigDecimal.ZERO) != 0 }) {
+            throw ClientHasNonZeroBalanceException(clientId)
+        }
+
+        bankAccountRepository.deleteBankAccountsByClientId(clientId)
+        clientRepository.getClientById(clientId) ?: throw ClientNotFoundException(clientId)
         clientRepository.deleteClientById(clientId)
-        bankAccountRepository.deleteBankAccountByClientId(clientId)
     }
 }
