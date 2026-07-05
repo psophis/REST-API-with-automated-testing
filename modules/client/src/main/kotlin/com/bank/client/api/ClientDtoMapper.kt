@@ -7,8 +7,8 @@ import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
 import com.bank.client.domain.ClientName
 
-fun Client.toDto(): ClientUpdateRequest =
-    ClientUpdateRequest(
+fun Client.toDto(): ClientDto =
+    ClientDto(
         id = id,
         name = name.toDto(),
         address = address.toDto(),
