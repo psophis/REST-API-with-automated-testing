@@ -4,6 +4,9 @@ import com.bank.BankingBackendApplication
 import com.bank.bankaccount.application.BankAccountService
 import com.bank.bankaccount.persistence.BankAccountEntity
 import com.bank.bankaccount.persistence.BankAccountJpaRepository
+import com.bank.client.domain.ClientRepository
+import com.bank.client.persistence.ClientEntity
+import com.bank.client.persistence.ClientJpaRepository
 import com.bank.payment.domain.TransactionType
 import com.bank.payment.persistence.TransactionEntity
 import com.bank.payment.persistence.TransactionJpaRepository
@@ -31,6 +34,9 @@ class BankAccountTransactionIntegrationTest {
     private lateinit var transactionJpaRepository: TransactionJpaRepository
 
     @Autowired
+    private lateinit var clientJpaRepository: ClientJpaRepository
+
+    @Autowired
     private lateinit var bankAccountService: BankAccountService
 
     @BeforeEach
@@ -41,10 +47,22 @@ class BankAccountTransactionIntegrationTest {
 
     @Test
     fun `should delete transactions when deleting account`() {
+        val client =
+            ClientEntity(
+                id = UUID.randomUUID().toString(),
+                lastName = "Doe",
+                firstName = "Jane",
+                street = "Main Street",
+                number = "456",
+                city = "London",
+                zipCode = "123456",
+            )
+        clientJpaRepository.save(client)
+
         val bankAccount =
             BankAccountEntity(
                 id = UUID.randomUUID().toString(),
-                clientId = UUID.randomUUID().toString(),
+                clientId = client.id,
                 iban = "DE12345678901234567890",
                 balance = BigDecimal.ZERO,
                 createdAt = Instant.now()
@@ -66,7 +84,8 @@ class BankAccountTransactionIntegrationTest {
         bankAccountService.deleteBankAccount(bankAccount.id)
 
         assertThat(bankAccountJpaRepository.findById(bankAccount.id)).isEmpty
-        assertThat(transactionJpaRepository.findById(bankAccount.id)).isEmpty
+        assertThat(transactionJpaRepository.findById(transaction.id)).isEmpty
+        assertThat(clientJpaRepository.findById(client.id)).isNotEmpty
     }
 
     companion object {
