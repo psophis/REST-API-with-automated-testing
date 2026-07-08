@@ -53,7 +53,7 @@ private fun ClientAddress.toDto(): ClientAddressDto =
 private fun ClientNameDto.toDomain(): ClientName =
     ClientName(
         name = name,
-        firstName = name,
+        firstName = firstName,
     )
 
 private fun ClientAddressDto.toDomain(): ClientAddress =
