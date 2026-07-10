@@ -4,7 +4,6 @@ import com.bank.BankingBackendApplication
 import com.bank.bankaccount.application.BankAccountService
 import com.bank.bankaccount.persistence.BankAccountEntity
 import com.bank.bankaccount.persistence.BankAccountJpaRepository
-import com.bank.client.domain.ClientRepository
 import com.bank.client.persistence.ClientEntity
 import com.bank.client.persistence.ClientJpaRepository
 import com.bank.payment.domain.TransactionType
