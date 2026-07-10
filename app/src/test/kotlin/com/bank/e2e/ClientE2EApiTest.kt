@@ -28,7 +28,7 @@ import java.time.Instant
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    classes = [BankingBackendApplication::class]
+    classes = [BankingBackendApplication::class],
 )
 @Testcontainers
 class ClientE2EApiTest {
@@ -71,11 +71,10 @@ class ClientE2EApiTest {
                             "zipCode": "10001"
                         }
                     }
-                    """.trimIndent()
-                )
-            .`when`()
+                    """.trimIndent(),
+                ).`when`()
                 .post("/api/clients")
-            .then()
+                .then()
                 .statusCode(201)
                 .body("id", Matchers.notNullValue())
                 .body("name.name", equalTo("Doe"))
@@ -114,8 +113,8 @@ class ClientE2EApiTest {
                     street = "Main Street",
                     number = "123",
                     city = "Berlin",
-                    zipCode = "10001"
-                )
+                    zipCode = "10001",
+                ),
             )
         val bankAccount =
             bankAccountJpaRepository.save(
@@ -124,8 +123,8 @@ class ClientE2EApiTest {
                     clientId = client.id,
                     iban = "DE0123456789",
                     balance = BigDecimal.ZERO,
-                    createdAt = Instant.now()
-                )
+                    createdAt = Instant.now(),
+                ),
             )
         val transaction1 =
             TransactionEntity(
@@ -135,7 +134,7 @@ class ClientE2EApiTest {
                 recipientIban = "DE9876543210",
                 amount = BigDecimal("500"),
                 type = TransactionType.WITHDRAWAL,
-                createdAt = Instant.now()
+                createdAt = Instant.now(),
             )
         val transaction2 =
             TransactionEntity(
@@ -145,16 +144,16 @@ class ClientE2EApiTest {
                 recipientIban = "DE9876543210",
                 amount = BigDecimal("1000"),
                 type = TransactionType.DEPOSIT,
-                createdAt = Instant.now()
+                createdAt = Instant.now(),
             )
         transactionJpaRepository.saveAll(listOf(transaction1, transaction2))
 
         given()
             .port(port)
             .contentType(ContentType.JSON)
-        .`when`()
+            .`when`()
             .delete("/api/clients/${client.id}")
-        .then()
+            .then()
             .statusCode(204)
 
         assertThat(clientJpaRepository.findById(client.id)).isEmpty

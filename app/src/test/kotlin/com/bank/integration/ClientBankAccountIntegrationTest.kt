@@ -25,7 +25,7 @@ import java.util.UUID
 
 @SpringBootTest(classes = [BankingBackendApplication::class])
 @Testcontainers
-class ClientBankAccountIntegrationTest{
+class ClientBankAccountIntegrationTest {
     @Autowired
     private lateinit var bankAccountJpaRepository: BankAccountJpaRepository
 
@@ -55,8 +55,8 @@ class ClientBankAccountIntegrationTest{
                         street = "Street",
                         number = "456",
                         zipCode = "1234",
-                        city = "London"
-                    )
+                        city = "London",
+                    ),
             )
 
         val createdClient = clientService.createClient(clientCommand)
@@ -80,7 +80,7 @@ class ClientBankAccountIntegrationTest{
                 street = "Street",
                 number = "456",
                 zipCode = "1234",
-                city = "London"
+                city = "London",
             )
         clientJpaRepository.save(client)
 

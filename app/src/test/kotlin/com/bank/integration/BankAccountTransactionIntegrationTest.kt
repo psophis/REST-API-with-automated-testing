@@ -65,7 +65,7 @@ class BankAccountTransactionIntegrationTest {
                 clientId = client.id,
                 iban = "DE12345678901234567890",
                 balance = BigDecimal.ZERO,
-                createdAt = Instant.now()
+                createdAt = Instant.now(),
             )
         bankAccountJpaRepository.save(bankAccount)
 
@@ -77,7 +77,7 @@ class BankAccountTransactionIntegrationTest {
                 recipientIban = "DE09876543210987654321",
                 amount = BigDecimal("100"),
                 type = TransactionType.DEPOSIT,
-                createdAt = Instant.now()
+                createdAt = Instant.now(),
             )
         transactionJpaRepository.save(transaction)
 
