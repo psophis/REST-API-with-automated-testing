@@ -28,7 +28,7 @@ import java.util.UUID
 
 @SpringBootTest(classes = [BankingBackendApplication::class])
 @Testcontainers
-class PaymentIntegrationTest {
+class PaymentTransactionIntegrationTest {
     @Autowired
     private lateinit var paymentController: PaymentController
 
