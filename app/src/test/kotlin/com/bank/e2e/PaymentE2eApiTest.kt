@@ -28,7 +28,7 @@ import java.time.Instant
     classes = [BankingBackendApplication::class],
 )
 @Testcontainers
-class PaymentE2EApiTest {
+class PaymentE2eApiTest {
     @LocalServerPort
     private var port: Int = 0
 
