@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 class TransactionRepositoryImpl(
     private val transactionJpaRepository: TransactionJpaRepository,
-) : TransactionRepository, BankAccountTransactionRepository {
+) : TransactionRepository,
+    BankAccountTransactionRepository {
     @Transactional(readOnly = true)
     override fun getTransactionById(id: String): Transaction =
         transactionJpaRepository
