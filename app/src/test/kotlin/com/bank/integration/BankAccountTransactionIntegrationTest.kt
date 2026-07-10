@@ -4,7 +4,6 @@ import com.bank.BankingBackendApplication
 import com.bank.bankaccount.application.BankAccountService
 import com.bank.bankaccount.persistence.BankAccountEntity
 import com.bank.bankaccount.persistence.BankAccountJpaRepository
-import com.bank.client.domain.ClientRepository
 import com.bank.client.persistence.ClientEntity
 import com.bank.client.persistence.ClientJpaRepository
 import com.bank.payment.domain.TransactionType
@@ -66,7 +65,7 @@ class BankAccountTransactionIntegrationTest {
                 clientId = client.id,
                 iban = "DE12345678901234567890",
                 balance = BigDecimal.ZERO,
-                createdAt = Instant.now()
+                createdAt = Instant.now(),
             )
         bankAccountJpaRepository.save(bankAccount)
 
@@ -78,7 +77,7 @@ class BankAccountTransactionIntegrationTest {
                 recipientIban = "DE09876543210987654321",
                 amount = BigDecimal("100"),
                 type = TransactionType.DEPOSIT,
-                createdAt = Instant.now()
+                createdAt = Instant.now(),
             )
         transactionJpaRepository.save(transaction)
 
