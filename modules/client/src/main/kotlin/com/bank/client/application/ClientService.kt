@@ -74,7 +74,7 @@ class ClientService(
         clientRepository.getClientById(clientId) ?: throw ClientNotFoundException(clientId)
 
         val accounts = bankAccountRepository.getBankAccountsByClientId(clientId)
-        if (accounts.any() { it.balance.compareTo(BigDecimal.ZERO) != 0 }) {
+        if (accounts.any { it.balance.compareTo(BigDecimal.ZERO) != 0 }) {
             throw ClientHasNonZeroBalanceException(clientId)
         }
 

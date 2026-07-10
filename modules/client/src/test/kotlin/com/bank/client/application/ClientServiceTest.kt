@@ -123,7 +123,7 @@ class ClientServiceTest {
         every { clientRepository.deleteClientById(client.id) } just runs
         every { bankAccountRepository.deleteBankAccountsByClientId(client.id) } just runs
         every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns
-                listOf(account(client.id).copy(balance = BigDecimal.ZERO))
+            listOf(account(client.id).copy(balance = BigDecimal.ZERO))
 
         // Act
         clientService.deleteClient(client.id)
@@ -201,14 +201,13 @@ class ClientServiceTest {
         verify(exactly = 0) { bankAccountRepository.deleteBankAccountsByClientId(any()) }
     }
 
-
     @Test
     fun `should throw ClientHasNonZeroBalanceException when deleting client with non-zero balance`() {
         // Arrange
         val client = client("client-id")
         every { clientRepository.getClientById(client.id) } returns client
         every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns
-                listOf(account(client.id).copy(balance = BigDecimal("100")))
+            listOf(account(client.id).copy(balance = BigDecimal("100")))
 
         // Act & Assert
         val result =
@@ -216,7 +215,7 @@ class ClientServiceTest {
                 clientService.deleteClient(client.id)
             }
         assertThat(result.message).isEqualTo(
-            "Could not delete client with id ${client.id} because at least one bank account has a non-zero balance"
+            "Could not delete client with id ${client.id} because at least one bank account has a non-zero balance",
         )
 
         verify(exactly = 1) { clientRepository.getClientById(client.id) }
