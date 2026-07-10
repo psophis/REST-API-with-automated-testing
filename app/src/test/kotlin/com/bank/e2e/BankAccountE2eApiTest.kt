@@ -79,7 +79,7 @@ class BankAccountE2eApiTest {
             .statusCode(201)
             .body("id", Matchers.notNullValue())
             .body("clientId", equalTo(client.id))
-            .body("balance", equalTo(0.00))
+            .body("balance", equalTo(0))
 
         val savedAccounts = bankAccountJpaRepository.findAllByClientId(client.id)
         assertThat(savedAccounts).hasSize(1)
