@@ -43,8 +43,8 @@ class PaymentE2EApiTest {
 
     @BeforeEach
     fun cleanDatabase() {
-        bankAccountJpaRepository.deleteAll()
         transactionJpaRepository.deleteAll()
+        bankAccountJpaRepository.deleteAll()
         clientJpaRepository.deleteAll()
     }
 
@@ -150,6 +150,27 @@ class PaymentE2EApiTest {
         assertThat(savedTransaction.senderIban).isEqualTo(account.iban)
         assertThat(savedTransaction.recipientIban).isEqualTo("DE1234567890123")
         assertThat(bankAccountJpaRepository.findById(account.id).get().balance).isEqualTo(BigDecimal("900.00"))
+    }
+
+    @Test
+    fun `transfer to non-existing bank account fails`() {
+        given()
+            .port(port)
+            .contentType(ContentType.JSON)
+            .body(
+                """
+                {
+                    "amount": 100.00,
+                    "recipientIban": "DE00000000000000000000",
+                    "senderIban": "DE11111111111111111111"
+                }
+                """.trimIndent(),
+            ).`when`()
+            .post("/api/payments/transfer")
+            .then()
+            .statusCode(404)
+
+        assertThat(transactionJpaRepository.findAll()).isEmpty()
     }
 
     @Test

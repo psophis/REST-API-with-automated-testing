@@ -46,8 +46,8 @@ class ClientE2EApiTest {
 
     @BeforeEach
     fun cleanDatabase() {
-        bankAccountJpaRepository.deleteAll()
         transactionJpaRepository.deleteAll()
+        bankAccountJpaRepository.deleteAll()
         clientJpaRepository.deleteAll()
     }
 
