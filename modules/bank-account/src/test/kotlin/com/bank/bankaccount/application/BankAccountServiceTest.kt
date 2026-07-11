@@ -113,7 +113,7 @@ class BankAccountServiceTest {
                 createdAt = Instant.now(),
             )
         every { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) } just runs
-        every { bankAccountRepository.getBankAccountById(accountId)} returns account
+        every { bankAccountRepository.getBankAccountById(accountId) } returns account
         every { bankAccountRepository.deleteByBankAccountId(accountId) } just runs
 
         // Act
@@ -138,7 +138,7 @@ class BankAccountServiceTest {
                 createdAt = Instant.now(),
             )
 
-        every { bankAccountRepository.getBankAccountById(accountId)} returns account
+        every { bankAccountRepository.getBankAccountById(accountId) } returns account
         every { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) } just runs
         every { bankAccountRepository.deleteByBankAccountId(accountId) } throws RuntimeException("boom")
 
