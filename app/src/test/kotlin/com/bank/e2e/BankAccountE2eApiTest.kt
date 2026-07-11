@@ -83,7 +83,7 @@ class BankAccountE2eApiTest {
 
         val savedAccounts = bankAccountJpaRepository.findAllByClientId(client.id)
         assertThat(savedAccounts).hasSize(1)
-        assertThat(savedAccounts.single().balance).isEqualTo(BigDecimal.ZERO)
+        assertThat(savedAccounts.single().balance).isEqualByComparingTo("0.00")
     }
 
     @Test
