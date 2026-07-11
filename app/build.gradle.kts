@@ -24,6 +24,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
+    testImplementation("io.rest-assured:kotlin-extensions:6.0.0")
+    testImplementation("io.rest-assured:rest-assured:6.0.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

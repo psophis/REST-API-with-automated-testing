@@ -27,8 +27,17 @@ subprojects {
             toolVersion = "0.8.14"
         }
 
+        val mockitoAgent =
+            configurations.create("mockitoAgent") {
+                isCanBeConsumed = false
+                isCanBeResolved = true
+            }
+
         tasks.withType<Test> {
             useJUnitPlatform()
+            doFirst {
+                jvmArgs("-javaagent:${mockitoAgent.asPath}")
+            }
             finalizedBy(tasks.named("jacocoTestReport"))
         }
 
@@ -56,9 +65,13 @@ subprojects {
         dependencies {
             add("implementation", platform("org.springframework.boot:spring-boot-dependencies:4.0.6"))
             add("testImplementation", platform("org.springframework.boot:spring-boot-dependencies:4.0.6"))
+            add("mockitoAgent", platform("org.springframework.boot:spring-boot-dependencies:4.0.6"))
 
             add("implementation", "org.jetbrains.kotlin:kotlin-reflect")
             add("testImplementation", "org.jetbrains.kotlin:kotlin-test-junit5")
+            add("mockitoAgent", "org.mockito:mockito-core") {
+                isTransitive = false
+            }
         }
 
         tasks.withType<Test> {

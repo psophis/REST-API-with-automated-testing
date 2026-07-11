@@ -121,7 +121,7 @@ class ClientServiceTest {
         val client = client("client-id")
         every { clientRepository.getClientById(client.id) } returns client
         every { clientRepository.deleteClientById(client.id) } just runs
-        every { bankAccountRepository.deleteBankAccountsByClientId(client.id) } just runs
+        every { bankAccountService.deleteBankAccount(any()) } just runs
         every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns
             listOf(account(client.id).copy(balance = BigDecimal.ZERO))
 
@@ -131,7 +131,7 @@ class ClientServiceTest {
         // Assert
         verify(exactly = 2) { clientRepository.getClientById(client.id) }
         verify(exactly = 1) { clientRepository.deleteClientById(client.id) }
-        verify(exactly = 1) { bankAccountRepository.deleteBankAccountsByClientId(client.id) }
+        verify(exactly = 1) { bankAccountService.deleteBankAccount(any()) }
         verify(exactly = 1) { bankAccountRepository.getBankAccountsByClientId(client.id) }
     }
 

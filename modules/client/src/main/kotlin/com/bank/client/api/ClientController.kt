@@ -22,7 +22,7 @@ class ClientController(
     @GetMapping("/{clientId}")
     fun getClient(
         @PathVariable clientId: String,
-    ): ResponseEntity<ClientUpdateRequest> {
+    ): ResponseEntity<ClientDto> {
         val client = clientService.getClient(clientId)
         return ResponseEntity.ok(client.toDto())
     }
@@ -38,7 +38,7 @@ class ClientController(
     @PostMapping
     fun createClient(
         @RequestBody client: ClientCreationRequest,
-    ): ResponseEntity<ClientUpdateRequest> {
+    ): ResponseEntity<ClientDto> {
         val createdClient =
             clientService.createClient(
                 client.toCommand(),
@@ -52,7 +52,7 @@ class ClientController(
     @PutMapping
     fun updateClient(
         @RequestBody client: ClientUpdateRequest,
-    ): ResponseEntity<ClientUpdateRequest> {
+    ): ResponseEntity<ClientDto> {
         val updatedClient =
             clientService.updateClient(
                 client.toCommand(),
