@@ -37,8 +37,9 @@ class BankAccountService(
     @Transactional
     fun deleteBankAccount(bankAccountId: String) {
         require(bankAccountId.isNotBlank()) { "BankAccountId cannot be blank" }
-        val account = bankAccountRepository.getBankAccountById(bankAccountId)
-            ?: throw BankAccountNotFoundException(bankAccountId)
+        val account =
+            bankAccountRepository.getBankAccountById(bankAccountId)
+                ?: throw BankAccountNotFoundException(bankAccountId)
 
         if (account.balance.compareTo(BigDecimal.ZERO) != 0) {
             throw BankAccountHasNonZeroBalanceException(bankAccountId)
