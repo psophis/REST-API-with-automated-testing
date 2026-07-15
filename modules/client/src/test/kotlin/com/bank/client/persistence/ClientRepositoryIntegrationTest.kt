@@ -1,13 +1,9 @@
-package com.bank.client.integrationtests
+package com.bank.client.persistence
 
 import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
 import com.bank.client.domain.ClientName
-import com.bank.client.persistence.ClientJpaRepository
-import com.bank.client.persistence.ClientRepositoryImpl
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.assertThrows
+import org.assertj.core.api.Assertions
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringBootConfiguration
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -45,7 +41,7 @@ class ClientRepositoryIntegrationTest {
         val loaded = clientRepository.getClientById(client.id)
 
         // Assert
-        assertThat(loaded).isEqualTo(client)
+        Assertions.assertThat(loaded).isEqualTo(client)
     }
 
     @Test
@@ -58,8 +54,8 @@ class ClientRepositoryIntegrationTest {
         clientRepository.deleteClientById(client.id)
 
         // Assert
-        assertThat(clientRepository.getClientById(client.id)).isNull()
-        assertThat(clientJpaRepository.findById(client.id)).isEmpty
+        Assertions.assertThat(clientRepository.getClientById(client.id)).isNull()
+        Assertions.assertThat(clientJpaRepository.findById(client.id)).isEmpty
     }
 
     @Test
@@ -68,7 +64,7 @@ class ClientRepositoryIntegrationTest {
         val clientId = "missing-client"
 
         // Act & Assert
-        assertThrows(NoSuchElementException::class.java) {
+        org.junit.jupiter.api.Assertions.assertThrows(NoSuchElementException::class.java) {
             clientRepository.deleteClientById(clientId)
         }
     }
@@ -84,7 +80,7 @@ class ClientRepositoryIntegrationTest {
         val result = clientRepository.updateClient(updatedClient)
 
         // Assert
-        assertThat(result).isEqualTo(updatedClient)
+        Assertions.assertThat(result).isEqualTo(updatedClient)
     }
 
     private fun client(

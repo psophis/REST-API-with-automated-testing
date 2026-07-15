@@ -1,11 +1,8 @@
-package com.bank.payment.integration
+package com.bank.payment.persistence
 
 import com.bank.payment.domain.Transaction
 import com.bank.payment.domain.TransactionType
-import com.bank.payment.persistence.TransactionJpaRepository
-import com.bank.payment.persistence.TransactionRepositoryImpl
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringBootConfiguration
@@ -45,7 +42,7 @@ class TransactionRepositoryIntegrationTest {
         val loaded = transactionRepository.getTransactionById(transaction.id)
 
         // Assert
-        assertThat(loaded).isEqualTo(transaction)
+        Assertions.assertThat(loaded).isEqualTo(transaction)
     }
 
     @Test
@@ -58,10 +55,10 @@ class TransactionRepositoryIntegrationTest {
         transactionRepository.deleteTransactionsByBankAccountId(transaction.accountId)
 
         // Assert
-        assertThrows(NoSuchElementException::class.java) {
+        org.junit.jupiter.api.Assertions.assertThrows(NoSuchElementException::class.java) {
             transactionRepository.getTransactionById(transaction.id)
         }
-        assertThat(transactionJpaRepository.findById(transaction.id)).isEmpty
+        Assertions.assertThat(transactionJpaRepository.findById(transaction.id)).isEmpty
     }
 
     @Test
@@ -70,7 +67,7 @@ class TransactionRepositoryIntegrationTest {
         val transactionId = "missing-transaction"
 
         // Act & Assert
-        assertThrows(NoSuchElementException::class.java) {
+        org.junit.jupiter.api.Assertions.assertThrows(NoSuchElementException::class.java) {
             transactionRepository.getTransactionById(transactionId)
         }
     }
@@ -88,11 +85,12 @@ class TransactionRepositoryIntegrationTest {
         val transactions = transactionRepository.getTransactionsByAccountId(accountId)
 
         // Assert
-        assertThat(transactions).hasSize(2)
-        assertThat(transactions).containsExactlyInAnyOrder(transaction1, transaction2)
-        assertThat(transactions.map { it.id }).containsExactly(transaction1.id, transaction2.id)
-        assertThat(transactions.map { it.amount }).containsExactly(BigDecimal("100.00"), BigDecimal("200.00"))
-        assertThat(transactions.map { it.type }).containsExactly(TransactionType.WITHDRAWAL, TransactionType.DEPOSIT)
+        Assertions.assertThat(transactions).hasSize(2)
+        Assertions.assertThat(transactions).containsExactlyInAnyOrder(transaction1, transaction2)
+        Assertions.assertThat(transactions.map { it.id }).containsExactly(transaction1.id, transaction2.id)
+        Assertions.assertThat(transactions.map { it.amount })
+            .containsExactly(BigDecimal("100.00"), BigDecimal("200.00"))
+        Assertions.assertThat(transactions.map { it.type }).containsExactly(TransactionType.WITHDRAWAL, TransactionType.DEPOSIT)
     }
 
     private fun transaction(
