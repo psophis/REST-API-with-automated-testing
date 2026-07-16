@@ -38,8 +38,11 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
 
-      - name: Run Tests
+      - name: Run tests
         run: ./gradlew test
+
+      - name: Run contract tests
+        run: ./gradlew contractTest
 
       - name: Publish Test Coverage Report
         uses: madrapps/jacoco-report@e51ce1f46f7f8b5331593f935e59cbaf44b84920 # v1.8.0

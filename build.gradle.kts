@@ -5,6 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7" apply false
     kotlin("plugin.jpa") version "2.2.21" apply false
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0" apply false
+    id("org.springframework.cloud.contract") version "5.0.3" apply false
 }
 
 group = "com.bachelorarbeit"
