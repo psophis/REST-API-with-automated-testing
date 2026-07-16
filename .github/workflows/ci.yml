@@ -42,6 +42,7 @@ jobs:
         run: ./gradlew test
 
       - name: Run contract tests
+        if: ${{ !cancelled() }}
         run: ./gradlew contractTest
 
       - name: Publish Test Coverage Report
