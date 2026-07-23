@@ -35,30 +35,24 @@ class ClientServiceTest {
 
     @Test
     fun `should get client`() {
-        // Arrange
         val client = client("client-id")
         every { clientRepository.getClientById(client.id) } returns client
 
-        // Act
         val result = clientService.getClient(client.id)
 
-        // Assert
         assertThat(result).isEqualTo(client)
         verify(exactly = 1) { clientRepository.getClientById(client.id) }
     }
 
     @Test
     fun `should get client accounts`() {
-        // Arrange
         val client = client("client-id")
         val accounts = listOf(account(client.id))
         every { clientRepository.getClientById(client.id) } returns client
         every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns accounts
 
-        // Act
         val result = clientService.getClientAccounts(client.id)
 
-        // Assert
         assertThat(result).isEqualTo(accounts)
         verify(exactly = 1) { clientRepository.getClientById(client.id) }
         verify(exactly = 1) { bankAccountRepository.getBankAccountsByClientId(client.id) }
@@ -66,7 +60,6 @@ class ClientServiceTest {
 
     @Test
     fun `should create client`() {
-        // Arrange
         val request = createClientCommand()
         val client = client(id = "persisted-client-id")
         every { clientRepository.createClient(any()) } returns client
@@ -76,10 +69,8 @@ class ClientServiceTest {
             )
         } returns account(client.id)
 
-        // Act
         val result = clientService.createClient(request)
 
-        // Assert
         assertThat(result).isEqualTo(client)
         assertThat(result.id).isEqualTo(client.id)
         assertThat(result.name).isEqualTo(client.name)
@@ -94,7 +85,6 @@ class ClientServiceTest {
 
     @Test
     fun `should update client`() {
-        // Arrange
         val request = updateClientCommand(id = "client-id")
         val existingClient = client(id = request.id)
         val expectedClient =
@@ -106,10 +96,8 @@ class ClientServiceTest {
         every { clientRepository.getClientById(request.id) } returns existingClient
         every { clientRepository.updateClient(expectedClient) } returns expectedClient
 
-        // Act
         val result = clientService.updateClient(request)
 
-        // Assert
         assertThat(result).isEqualTo(expectedClient)
         verify(exactly = 1) { clientRepository.getClientById(request.id) }
         verify(exactly = 1) { clientRepository.updateClient(expectedClient) }
@@ -117,7 +105,6 @@ class ClientServiceTest {
 
     @Test
     fun `should delete client`() {
-        // Arrange
         val client = client("client-id")
         every { clientRepository.getClientById(client.id) } returns client
         every { clientRepository.deleteClientById(client.id) } just runs
@@ -125,10 +112,8 @@ class ClientServiceTest {
         every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns
             listOf(account(client.id).copy(balance = BigDecimal.ZERO))
 
-        // Act
         clientService.deleteClient(client.id)
 
-        // Assert
         verify(exactly = 2) { clientRepository.getClientById(client.id) }
         verify(exactly = 1) { clientRepository.deleteClientById(client.id) }
         verify(exactly = 1) { bankAccountService.deleteBankAccount(any()) }
@@ -137,11 +122,9 @@ class ClientServiceTest {
 
     @Test
     fun `should throw ClientNotFoundException when client does not exist`() {
-        // Arrange
         val clientId = "non-existing-client-id"
         every { clientRepository.getClientById(clientId) } returns null
 
-        // Act & Assert
         val result =
             assertThrows(ClientNotFoundException::class.java) {
                 clientService.deleteClient(clientId)
@@ -153,12 +136,10 @@ class ClientServiceTest {
 
     @Test
     fun `should return empty account list when client has no accounts`() {
-        // Arrange
         val client = client("client-id")
         every { clientRepository.getClientById(client.id) } returns client
         every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns emptyList()
 
-        // Act
         val result = clientService.getClientAccounts(client.id)
 
         assertThat(result).isEmpty()
@@ -168,11 +149,9 @@ class ClientServiceTest {
 
     @Test
     fun `should throw ClientNotFoundException when updating non-existing client`() {
-        // Arrange
         val request = updateClientCommand(id = "non-existing-client-id")
         every { clientRepository.getClientById(request.id) } returns null
 
-        // Act & Assert
         val result =
             assertThrows(ClientNotFoundException::class.java) {
                 clientService.updateClient(request)
@@ -185,11 +164,9 @@ class ClientServiceTest {
 
     @Test
     fun `should throw ClientNotFoundException when deleting missing client`() {
-        // Arrange
         val clientId = "non-existing-client-id"
         every { clientRepository.getClientById(clientId) } returns null
 
-        // Act & Assert
         val result =
             assertThrows(ClientNotFoundException::class.java) {
                 clientService.deleteClient(clientId)
@@ -203,13 +180,11 @@ class ClientServiceTest {
 
     @Test
     fun `should throw ClientHasNonZeroBalanceException when deleting client with non-zero balance`() {
-        // Arrange
         val client = client("client-id")
         every { clientRepository.getClientById(client.id) } returns client
         every { bankAccountRepository.getBankAccountsByClientId(client.id) } returns
             listOf(account(client.id).copy(balance = BigDecimal("100")))
 
-        // Act & Assert
         val result =
             assertThrows(ClientHasNonZeroBalanceException::class.java) {
                 clientService.deleteClient(client.id)

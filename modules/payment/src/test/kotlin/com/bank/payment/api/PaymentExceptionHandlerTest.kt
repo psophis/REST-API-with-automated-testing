@@ -26,7 +26,6 @@ class PaymentExceptionHandlerTest {
 
     @Test
     fun `should return 404 for PaymentAccountNotFoundException`() {
-        // Arrange
         val fromIban = "DE1234567890"
         val toIban = "DE0987654321"
         val amount = BigDecimal("100.00")
@@ -35,7 +34,6 @@ class PaymentExceptionHandlerTest {
             paymentService.transferMoney(fromIban, toIban, amount)
         } throws PaymentAccountNotFoundException("Account not found")
 
-        // Act/Assert
         mockMvc
             .post("/api/payments/transfer") {
                 contentType = MediaType.APPLICATION_JSON
@@ -48,7 +46,6 @@ class PaymentExceptionHandlerTest {
 
     @Test
     fun `should return 500 for generic exception`() {
-        // Arrange
         val fromIban = "DE1234567890"
         val toIban = "DE0987654321"
         val amount = BigDecimal("100.00")
@@ -57,7 +54,6 @@ class PaymentExceptionHandlerTest {
             paymentService.transferMoney(fromIban, toIban, amount)
         } throws RuntimeException("boom")
 
-        // Act/Assert
         mockMvc
             .post("/api/payments/transfer") {
                 contentType = MediaType.APPLICATION_JSON

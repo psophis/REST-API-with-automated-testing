@@ -25,7 +25,6 @@ class TransactionServiceTest {
 
     @Test
     fun `should get a transaction by transaction id`() {
-        // Arrange
         val transactionId = "transaction-id"
         val transaction =
             Transaction(
@@ -40,10 +39,8 @@ class TransactionServiceTest {
 
         every { transactionRepository.getTransactionById(transactionId) } returns transaction
 
-        // Act
         val response = transactionService.getTransaction(transactionId)
 
-        // Assert
         assertThat(response.id).isEqualTo(transactionId)
         assertThat(response.accountId).isEqualTo(transaction.accountId)
         assertThat(response.senderIban).isEqualTo(transaction.senderIban)
@@ -56,17 +53,14 @@ class TransactionServiceTest {
 
     @Test
     fun `should throw exception when returning transaction fails`() {
-        // Arrange
         val transactionId = "transaction-id"
         every { transactionRepository.getTransactionById(transactionId) } throws RuntimeException("boom")
 
-        // Assert
         assertThrows(RuntimeException::class.java) { transactionService.getTransaction(transactionId) }
     }
 
     @Test
     fun `should get a list of transactions by account id`() {
-        // Arrange
         val accountId = "account-id"
         val transactions =
             listOf(
@@ -82,10 +76,8 @@ class TransactionServiceTest {
             )
         every { transactionRepository.getTransactionsByAccountId(accountId) } returns transactions
 
-        // Act
         val response = transactionService.getAccountTransactions(accountId)
 
-        // Assert
         assertThat(response.size).isEqualTo(transactions.size)
         assertThat(response.first().id).isEqualTo(transactions[0].id)
         assertThat(response.first().accountId).isEqualTo(transactions[0].accountId)
@@ -99,24 +91,19 @@ class TransactionServiceTest {
 
     @Test
     fun `should throw exception when returning list of transactions fails`() {
-        // Arrange
         val accountId = "account-id"
         every { transactionRepository.getTransactionsByAccountId(accountId) } throws RuntimeException("boom")
 
-        // Assert
         assertThrows(RuntimeException::class.java) { transactionService.getAccountTransactions(accountId) }
     }
 
     @Test
     fun `should return an empty list of transactions when account has no transaction`() {
-        // Arrange
         val accountId = "account-id"
         every { transactionRepository.getTransactionsByAccountId(accountId) } returns emptyList()
 
-        // Act
         val response = transactionService.getAccountTransactions(accountId)
 
-        // Assert
         assertThat(response).isEmpty()
         verify(exactly = 1) { transactionRepository.getTransactionsByAccountId(accountId) }
     }

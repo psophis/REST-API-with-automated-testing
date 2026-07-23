@@ -33,37 +33,29 @@ class ClientRepositoryIntegrationTest {
 
     @Test
     fun `should load client by id`() {
-        // Arrange
         val client = client()
         clientRepository.createClient(client)
 
-        // Act
         val loaded = clientRepository.getClientById(client.id)
 
-        // Assert
         Assertions.assertThat(loaded).isEqualTo(client)
     }
 
     @Test
     fun `should delete client by id`() {
-        // Arrange
         val client = client()
         clientRepository.createClient(client)
 
-        // Act
         clientRepository.deleteClientById(client.id)
 
-        // Assert
         Assertions.assertThat(clientRepository.getClientById(client.id)).isNull()
         Assertions.assertThat(clientJpaRepository.findById(client.id)).isEmpty
     }
 
     @Test
     fun `should throw when client does not exist`() {
-        // Arrange
         val clientId = "missing-client"
 
-        // Act & Assert
         org.junit.jupiter.api.Assertions.assertThrows(NoSuchElementException::class.java) {
             clientRepository.deleteClientById(clientId)
         }
@@ -71,15 +63,12 @@ class ClientRepositoryIntegrationTest {
 
     @Test
     fun `should update client`() {
-        // Arrange
         val client = client()
         clientRepository.createClient(client)
         val updatedClient = client.copy(name = ClientName("Smith", "Jane"))
 
-        // Act
         val result = clientRepository.updateClient(updatedClient)
 
-        // Assert
         Assertions.assertThat(result).isEqualTo(updatedClient)
     }
 

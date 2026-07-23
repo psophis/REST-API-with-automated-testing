@@ -34,27 +34,21 @@ class TransactionRepositoryIntegrationTest {
 
     @Test
     fun `should load transaction by id`() {
-        // Arrange
         val transaction = transaction()
         transactionRepository.createTransaction(transaction)
 
-        // Act
         val loaded = transactionRepository.getTransactionById(transaction.id)
 
-        // Assert
         Assertions.assertThat(loaded).isEqualTo(transaction)
     }
 
     @Test
     fun `should delete transaction by account id`() {
-        // Arrange
         val transaction = transaction()
         transactionRepository.createTransaction(transaction)
 
-        // Act
         transactionRepository.deleteTransactionsByBankAccountId(transaction.accountId)
 
-        // Assert
         org.junit.jupiter.api.Assertions.assertThrows(NoSuchElementException::class.java) {
             transactionRepository.getTransactionById(transaction.id)
         }
@@ -63,10 +57,8 @@ class TransactionRepositoryIntegrationTest {
 
     @Test
     fun `should throw when transaction does not exist`() {
-        // Arrange
         val transactionId = "missing-transaction"
 
-        // Act & Assert
         org.junit.jupiter.api.Assertions.assertThrows(NoSuchElementException::class.java) {
             transactionRepository.getTransactionById(transactionId)
         }
@@ -74,17 +66,14 @@ class TransactionRepositoryIntegrationTest {
 
     @Test
     fun `should keep transaction history consistent`() {
-        // Arrange
         val accountId = UUID.randomUUID().toString()
         val transaction1 = transaction(accountId = accountId, amount = BigDecimal("100.00"), type = TransactionType.WITHDRAWAL)
         val transaction2 = transaction(accountId = accountId, amount = BigDecimal("200.00"), type = TransactionType.DEPOSIT)
         transactionRepository.createTransaction(transaction1)
         transactionRepository.createTransaction(transaction2)
 
-        // Act
         val transactions = transactionRepository.getTransactionsByAccountId(accountId)
 
-        // Assert
         Assertions.assertThat(transactions).hasSize(2)
         Assertions.assertThat(transactions).containsExactlyInAnyOrder(transaction1, transaction2)
         Assertions.assertThat(transactions.map { it.id }).containsExactly(transaction1.id, transaction2.id)

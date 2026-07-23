@@ -52,7 +52,6 @@ class PaymentTransactionIntegrationTest {
 
     @Test
     fun `should create transaction and update balance when depositing money`() {
-        // Arrange
         val client =
             clientJpaRepository.save(
                 ClientEntity(
@@ -81,10 +80,8 @@ class PaymentTransactionIntegrationTest {
                 amount = BigDecimal("100.00"),
             )
 
-        // Act
         val response = paymentController.depositMoney(depositRequest)
 
-        // Assert
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         val updatedAccount = bankAccountJpaRepository.findById(account.id).orElseThrow()
@@ -100,7 +97,6 @@ class PaymentTransactionIntegrationTest {
 
     @Test
     fun `should create transaction and update balance when withdrawing money`() {
-        // Arrange
         val client =
             clientJpaRepository.save(
                 ClientEntity(
@@ -129,10 +125,8 @@ class PaymentTransactionIntegrationTest {
                 amount = BigDecimal("50.00"),
             )
 
-        // Act
         val response = paymentController.withdrawMoney(withdrawalRequest)
 
-        // Assert
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         val updatedAccount = bankAccountJpaRepository.findById(account.id).orElseThrow()
@@ -148,7 +142,6 @@ class PaymentTransactionIntegrationTest {
 
     @Test
     fun `should roll back transaction when withdrawing more than account balance`() {
-        // Arrange
         val client =
             clientJpaRepository.save(
                 ClientEntity(
@@ -177,12 +170,10 @@ class PaymentTransactionIntegrationTest {
                 amount = BigDecimal("150.00"),
             )
 
-        // Act
         assertThrows<InvalidDataAccessApiUsageException> {
             paymentController.withdrawMoney(withdrawalRequest)
         }
 
-        // Assert
         val unchangedAccount = bankAccountJpaRepository.findById(account.id).orElseThrow()
         assertThat(unchangedAccount.balance).isEqualTo(BigDecimal("100.00"))
 
@@ -192,7 +183,6 @@ class PaymentTransactionIntegrationTest {
 
     @Test
     fun `should create transaction and update balance when sending bank transfer`() {
-        // Arrange
         val client =
             clientJpaRepository.save(
                 ClientEntity(
@@ -222,10 +212,8 @@ class PaymentTransactionIntegrationTest {
                 senderIban = account.iban,
             )
 
-        // Act
         val response = paymentController.sendBankTransfer(bankTransferRequest)
 
-        // Assert
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         val updatedAccount = bankAccountJpaRepository.findById(account.id).orElseThrow()
@@ -241,7 +229,6 @@ class PaymentTransactionIntegrationTest {
 
     @Test
     fun `should create transaction and update balance when receiving bank transfer`() {
-        // Arrange
         val client =
             clientJpaRepository.save(
                 ClientEntity(
@@ -271,7 +258,6 @@ class PaymentTransactionIntegrationTest {
                 senderIban = "DE0987654321",
             )
 
-        // Act
         val response = paymentController.sendBankTransfer(bankTransferRequest)
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 

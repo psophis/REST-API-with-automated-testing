@@ -30,7 +30,6 @@ class PaymentServiceTest {
 
     @Test
     fun `should transfer money to external account and decrease balance`() {
-        // Arrange
         val amount = BigDecimal("100.00")
         val senderAccount = account(id = "sender-account", clientId = "client-a", iban = "DE1234567890")
 
@@ -44,10 +43,8 @@ class PaymentServiceTest {
             )
         } just runs
 
-        // Act
         val result = paymentService.transferMoney(senderAccount.iban, "DE0987654321", amount)
 
-        // Assert
         assertThat(result.accountId).isEqualTo(senderAccount.id)
         assertThat(result.senderIban).isEqualTo(senderAccount.iban)
         assertThat(result.recipientIban).isEqualTo("DE0987654321")
@@ -67,7 +64,6 @@ class PaymentServiceTest {
 
     @Test
     fun `should receive money via bank transfer`() {
-        // Arrange
         val amount = BigDecimal("100.00")
         val recipientAccount = account(id = "recipient-account", clientId = "client-b", iban = "DE0987654321")
 
@@ -81,10 +77,8 @@ class PaymentServiceTest {
             )
         } just runs
 
-        // Act
         val result = paymentService.transferMoney("DE1234567890", recipientAccount.iban, amount)
 
-        // Assert
         assertThat(result.accountId).isEqualTo(recipientAccount.id)
         assertThat(result.senderIban).isEqualTo("DE1234567890")
         assertThat(result.recipientIban).isEqualTo(recipientAccount.iban)
@@ -104,11 +98,9 @@ class PaymentServiceTest {
 
     @Test
     fun `should throw when no account matches sender or recipient iban`() {
-        // Arrange
         every { bankAccountRepository.getBankAccountByIban("DE1234567890") } returns null
         every { bankAccountRepository.getBankAccountByIban("DE0987654321") } returns null
 
-        // Assert
         assertThatThrownBy {
             paymentService.transferMoney("DE1234567890", "DE0987654321", BigDecimal("100.00"))
         }.isInstanceOf(PaymentAccountNotFoundException::class.java)

@@ -209,12 +209,10 @@ class ClientControllerTest {
 
     @Test
     fun `should return 404 when updating missing client`() {
-        // Arrange
         val request = clientUpdateRequest(id = "missing-client")
         val command = request.toCommand()
         every { clientService.updateClient(command) } throws ClientNotFoundException(request.id)
 
-        // Act
         mockMvc
             .put("/api/clients") {
                 contentType = MediaType.APPLICATION_JSON
@@ -238,7 +236,6 @@ class ClientControllerTest {
                 status { isNotFound() }
             }
 
-        // Assert
         verify(exactly = 1) { clientService.updateClient(command) }
     }
 

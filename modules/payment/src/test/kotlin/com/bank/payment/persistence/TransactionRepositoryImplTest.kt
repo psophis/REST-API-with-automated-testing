@@ -18,7 +18,6 @@ class TransactionRepositoryImplTest {
 
     @Test
     fun `should return transaction by id`() {
-        // Arrange
         val transactionId = "transaction-id"
         val transaction =
             Transaction(
@@ -42,34 +41,28 @@ class TransactionRepositoryImplTest {
             )
         every { transactionJpaRepository.findById(transactionId) } returns Optional.of(entity)
 
-        // Act
         val loaded = transactionRepository.getTransactionById(transactionId)
 
-        // Assert
         assertThat(loaded).isEqualTo(transaction)
         verify(exactly = 1) { transactionJpaRepository.findById(transactionId) }
     }
 
     @Test
     fun `should throw when transaction is not found`() {
-        // Arrange
         val transactionId = "missing-id"
         every { transactionJpaRepository.findById(transactionId) } returns Optional.empty()
 
-        // Act
         val exception =
             assertThrows(NoSuchElementException::class.java) {
                 transactionRepository.getTransactionById(transactionId)
             }
 
-        // Assert
         assertThat(exception.message).isEqualTo("Transaction not found: $transactionId")
         verify(exactly = 1) { transactionJpaRepository.findById(transactionId) }
     }
 
     @Test
     fun `should return transactions by account id`() {
-        // Arrange
         val accountId = "account-id"
         val createdAt = Instant.now()
         val entities =
@@ -95,10 +88,8 @@ class TransactionRepositoryImplTest {
             )
         every { transactionJpaRepository.findAllByAccountId(accountId) } returns entities
 
-        // Act
         val loaded = transactionRepository.getTransactionsByAccountId(accountId)
 
-        // Assert
         assertThat(loaded).hasSize(2)
         assertThat(loaded[0].id).isEqualTo(entities[0].id)
         assertThat(loaded[0].amount).isEqualByComparingTo(entities[0].amount)
@@ -109,7 +100,6 @@ class TransactionRepositoryImplTest {
 
     @Test
     fun `should create transaction`() {
-        // Arrange
         val transaction =
             Transaction(
                 id = "transaction-id",
@@ -132,10 +122,8 @@ class TransactionRepositoryImplTest {
             )
         every { transactionJpaRepository.save(any()) } returns savedEntity
 
-        // Act
         val created = transactionRepository.createTransaction(transaction)
 
-        // Assert
         assertThat(created).isEqualTo(transaction)
         verify(exactly = 1) { transactionJpaRepository.save(any()) }
     }

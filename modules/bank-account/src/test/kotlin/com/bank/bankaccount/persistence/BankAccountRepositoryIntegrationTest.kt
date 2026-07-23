@@ -33,7 +33,6 @@ class BankAccountRepositoryIntegrationTest {
 
     @Test
     fun `should create and load account`() {
-        // Arrange
         val bankAccountId = UUID.randomUUID().toString()
         val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val bankAccount =
@@ -46,10 +45,8 @@ class BankAccountRepositoryIntegrationTest {
             )
         bankAccountRepository.createBankAccount(bankAccount)
 
-        // Act
         val loaded = bankAccountRepository.getBankAccountById(bankAccountId)
 
-        // Assert
         assertThat(loaded).isNotNull
         assertThat(loaded?.id).isEqualTo(bankAccount.id)
         assertThat(loaded?.clientId).isEqualTo(bankAccount.clientId)
@@ -58,7 +55,6 @@ class BankAccountRepositoryIntegrationTest {
 
     @Test
     fun `should find account by iban`() {
-        // Arrange
         val bankAccountId = UUID.randomUUID().toString()
         val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val entity =
@@ -72,26 +68,21 @@ class BankAccountRepositoryIntegrationTest {
 
         bankAccountJpaRepository.save(entity)
 
-        // Act
         val result = bankAccountRepository.getBankAccountByIban(iban)
 
-        // Assert
         assertThat(result).isNotNull
         assertThat(result?.id).isEqualTo(bankAccountId)
     }
 
     @Test
     fun `should return null when iban not found`() {
-        // Act
         val result = bankAccountRepository.getBankAccountByIban("UNKNOWN")
 
-        // Assert
         assertThat(result).isNull()
     }
 
     @Test
     fun `should increase account balance`() {
-        // Arrange
         val bankAccountId = UUID.randomUUID().toString()
         val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val entity =
@@ -105,20 +96,17 @@ class BankAccountRepositoryIntegrationTest {
 
         bankAccountJpaRepository.save(entity)
 
-        // Act
         bankAccountRepository.increaseBankAccountBalance(
             bankAccountId = bankAccountId,
             amount = BigDecimal("50"),
         )
 
-        // Assert
         val updated = bankAccountJpaRepository.findById(bankAccountId).get()
         assertThat(updated.balance).isEqualByComparingTo("150")
     }
 
     @Test
     fun `should reduce account balance`() {
-        // Arrange
         val bankAccountId = UUID.randomUUID().toString()
         val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val entity =
@@ -132,20 +120,17 @@ class BankAccountRepositoryIntegrationTest {
 
         bankAccountJpaRepository.save(entity)
 
-        // Act
         bankAccountRepository.decreaseBankAccountBalance(
             bankAccountId = bankAccountId,
             amount = BigDecimal("40"),
         )
 
-        // Assert
         val updated = bankAccountJpaRepository.findById(bankAccountId).get()
         assertThat(updated.balance).isEqualByComparingTo("60")
     }
 
     @Test
     fun `should delete account`() {
-        // Arrange
         val bankAccountId = UUID.randomUUID().toString()
         val iban = "DE${UUID.randomUUID().toString().take(10)}"
         val entity =
@@ -159,12 +144,10 @@ class BankAccountRepositoryIntegrationTest {
 
         bankAccountJpaRepository.save(entity)
 
-        // Act
         bankAccountRepository.deleteByBankAccountId(bankAccountId)
 
         val deleted = bankAccountJpaRepository.findById(bankAccountId)
 
-        // Assert
         assertThat(deleted.isEmpty).isTrue()
     }
 
@@ -189,7 +172,6 @@ class BankAccountRepositoryIntegrationTest {
 
     @Test
     fun `should find accounts by client id`() {
-        // Arrange
         val clientId = "client-1"
         val firstAccount =
             BankAccountEntity(
@@ -211,10 +193,8 @@ class BankAccountRepositoryIntegrationTest {
         bankAccountJpaRepository.save(firstAccount)
         bankAccountJpaRepository.save(secondAccount)
 
-        // Act
         val result = bankAccountRepository.getBankAccountsByClientId(clientId)
 
-        // Assert
         assertThat(result).hasSize(2)
         assertThat(result).anyMatch { it.id == firstAccount.id }
         assertThat(result).anyMatch { it.id == secondAccount.id }
@@ -222,10 +202,8 @@ class BankAccountRepositoryIntegrationTest {
 
     @Test
     fun `should return empty list when client has no accounts`() {
-        // Act
         val result = bankAccountRepository.getBankAccountsByClientId("unknown-client")
 
-        // Assert
         assertThat(result).isEmpty()
     }
 
@@ -281,7 +259,6 @@ class BankAccountRepositoryIntegrationTest {
 
     @Test
     fun `should throw exception when decreasing more than balance`() {
-        // Arrange
         val bankAccountId = UUID.randomUUID().toString()
         val entity =
             BankAccountEntity(
@@ -294,7 +271,6 @@ class BankAccountRepositoryIntegrationTest {
 
         bankAccountJpaRepository.save(entity)
 
-        // Act/Assert
         org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException::class.java) {
             bankAccountRepository.decreaseBankAccountBalance(
                 bankAccountId = bankAccountId,
@@ -305,7 +281,6 @@ class BankAccountRepositoryIntegrationTest {
 
     @Test
     fun `should delete accounts by client id`() {
-        // Arrange
         val clientId = "client-1"
         val firstAccount =
             BankAccountEntity(
@@ -336,10 +311,8 @@ class BankAccountRepositoryIntegrationTest {
         bankAccountJpaRepository.save(secondAccount)
         bankAccountJpaRepository.save(otherClientAccount)
 
-        // Act
         bankAccountRepository.deleteBankAccountsByClientId(clientId)
 
-        // Assert
         assertThat(bankAccountJpaRepository.findById(firstAccount.id).isEmpty).isTrue()
         assertThat(bankAccountJpaRepository.findById(secondAccount.id).isEmpty).isTrue()
         assertThat(bankAccountJpaRepository.findById(otherClientAccount.id).isPresent).isTrue()
@@ -347,7 +320,6 @@ class BankAccountRepositoryIntegrationTest {
 
     @Test
     fun `should do nothing when deleting accounts by unknown client id`() {
-        // Arrange
         val entity =
             BankAccountEntity(
                 id = UUID.randomUUID().toString(),
@@ -359,10 +331,8 @@ class BankAccountRepositoryIntegrationTest {
 
         bankAccountJpaRepository.save(entity)
 
-        // Act
         bankAccountRepository.deleteBankAccountsByClientId("unknown-client")
 
-        // Assert
         assertThat(bankAccountJpaRepository.findById(entity.id).isPresent).isTrue()
     }
 }

@@ -31,7 +31,6 @@ class BankAccountServiceTest {
 
     @Test
     fun `should get account by account id`() {
-        // Arrange
         val bankAccount =
             BankAccount(
                 id = "account-id",
@@ -43,41 +42,34 @@ class BankAccountServiceTest {
 
         every { bankAccountRepository.getBankAccountById(bankAccount.id) } returns bankAccount
 
-        // Act
         val result = bankAccountService.getBankAccount(bankAccount.id)
 
-        // Assert
         assertThat(result).isEqualTo(bankAccount)
         verify(exactly = 1) { bankAccountRepository.getBankAccountById(bankAccount.id) }
     }
 
     @Test
     fun `should throw exception when returning account fails`() {
-        // Arrange
         val accountId = "account-id"
 
         every { bankAccountRepository.getBankAccountById(any()) } throws RuntimeException("boom")
 
-        // Assert
         assertThrows(RuntimeException::class.java) { bankAccountService.getBankAccount(accountId) }
     }
 
     @Test
     fun `should create new account`() {
-        // Arrange
         val clientId = "client-id"
         val iban = "DE1234567890"
 
         every { ibanGenerator.generateIban() } returns iban
         every { bankAccountRepository.createBankAccount(any()) } answers { firstArg() }
 
-        // Act
         val result =
             bankAccountService.createBankAccount(
                 clientId = clientId,
             )
 
-        // Assert
         assertThat(result.clientId).isEqualTo(clientId)
         assertThat(result.iban).isEqualTo(iban)
         assertThat(result.balance).isEqualTo(BigDecimal.ZERO)
@@ -87,11 +79,9 @@ class BankAccountServiceTest {
 
     @Test
     fun `should throw exception when account creation fails`() {
-        // Arrange
         every { ibanGenerator.generateIban() } returns "DE1234567890"
         every { bankAccountRepository.createBankAccount(any()) } throws RuntimeException("boom")
 
-        // Act/Assert
         assertThrows(RuntimeException::class.java) {
             bankAccountService.createBankAccount(
                 clientId = "client-id",
@@ -101,7 +91,6 @@ class BankAccountServiceTest {
 
     @Test
     fun `should delete account by account id`() {
-        // Arrange
         val accountId = "account-id"
         val account =
             BankAccount(
@@ -115,10 +104,8 @@ class BankAccountServiceTest {
         every { bankAccountRepository.getBankAccountById(accountId) } returns account
         every { bankAccountRepository.deleteByBankAccountId(accountId) } just runs
 
-        // Act
         bankAccountService.deleteBankAccount(accountId)
 
-        // Assert
         verify(exactly = 1) { bankAccountRepository.deleteByBankAccountId(accountId) }
         verify(exactly = 1) { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) }
         verify(exactly = 1) { bankAccountRepository.deleteByBankAccountId(accountId) }
@@ -126,7 +113,6 @@ class BankAccountServiceTest {
 
     @Test
     fun `should throw RuntimeException when account deletion fails`() {
-        // Arrange
         val accountId = "account-id"
         val account =
             BankAccount(
@@ -141,13 +127,11 @@ class BankAccountServiceTest {
         every { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) } just runs
         every { bankAccountRepository.deleteByBankAccountId(accountId) } throws RuntimeException("boom")
 
-        // Act
         val exception =
             assertThrows(RuntimeException::class.java) {
                 bankAccountService.deleteBankAccount(accountId)
             }
 
-        // Assert
         assertThat(exception.message).isEqualTo("boom")
         verify(exactly = 1) { bankAccountRepository.getBankAccountById(accountId) }
         verify(exactly = 1) { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) }
@@ -156,18 +140,15 @@ class BankAccountServiceTest {
 
     @Test
     fun `should throw BankAccountNotFoundException when account does not exist`() {
-        // Arrange
         val accountId = "non-existent-account-id"
 
         every { bankAccountRepository.getBankAccountById(accountId) } returns null
 
-        // Act
         val exception =
             assertThrows(BankAccountNotFoundException::class.java) {
                 bankAccountService.getBankAccount(accountId)
             }
 
-        // Assert
         assertThat(exception.message).isEqualTo("Could not find bank account with id $accountId")
         verify(exactly = 1) { bankAccountRepository.getBankAccountById(accountId) }
     }
@@ -197,7 +178,6 @@ class BankAccountServiceTest {
 
     @Test
     fun `should throw BankAccountHasNonZeroBalanceException during deletion when balance is non-zero`() {
-        // Arrange
         val accountId = "account-id"
         val account =
             BankAccount(
@@ -211,7 +191,6 @@ class BankAccountServiceTest {
         every { bankAccountTransactionRepository.deleteTransactionsByBankAccountId(accountId) } just runs
         every { bankAccountRepository.deleteByBankAccountId(accountId) } just runs
 
-        // Act
         val exception =
             assertThrows(BankAccountHasNonZeroBalanceException::class.java) {
                 bankAccountService.deleteBankAccount(accountId)
