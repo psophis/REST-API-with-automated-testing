@@ -15,12 +15,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.delete
+import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.put
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
@@ -41,15 +39,17 @@ class ClientControllerTest {
         every { clientService.getClient(client.id) } returns client
 
         mockMvc
-            .perform(get("/api/clients/{clientId}", client.id))
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.id").value(client.id))
-            .andExpect(jsonPath("$.name.name").value(client.name.name))
-            .andExpect(jsonPath("$.name.firstName").value(client.name.firstName))
-            .andExpect(jsonPath("$.address.street").value(client.address.street))
-            .andExpect(jsonPath("$.address.number").value(client.address.number))
-            .andExpect(jsonPath("$.address.zipCode").value(client.address.zipCode))
-            .andExpect(jsonPath("$.address.city").value(client.address.city))
+            .get("/api/clients/{clientId}", client.id)
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value(client.id) }
+                jsonPath("$.name.name") { value(client.name.name) }
+                jsonPath("$.name.firstName") { value(client.name.firstName) }
+                jsonPath("$.address.street") { value(client.address.street) }
+                jsonPath("$.address.number") { value(client.address.number) }
+                jsonPath("$.address.zipCode") { value(client.address.zipCode) }
+                jsonPath("$.address.city") { value(client.address.city) }
+            }
 
         verify(exactly = 1) { clientService.getClient(client.id) }
     }
@@ -60,8 +60,10 @@ class ClientControllerTest {
         every { clientService.getClient(clientId) } throws ClientNotFoundException(clientId)
 
         mockMvc
-            .perform(get("/api/clients/{clientId}", clientId))
-            .andExpect(status().isNotFound)
+            .get("/api/clients/{clientId}", clientId)
+            .andExpect {
+                status { isNotFound() }
+            }
 
         verify(exactly = 1) { clientService.getClient(clientId) }
     }
@@ -73,11 +75,13 @@ class ClientControllerTest {
         every { clientService.getClientAccounts(clientId) } returns listOf(account)
 
         mockMvc
-            .perform(get("/api/clients/{clientId}/accounts", clientId))
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$[0].id").value(account.id))
-            .andExpect(jsonPath("$[0].clientId").value(account.clientId))
-            .andExpect(jsonPath("$[0].iban").value(account.iban))
+            .get("/api/clients/{clientId}/accounts", clientId)
+            .andExpect {
+                status { isOk() }
+                jsonPath("$[0].id") { value(account.id) }
+                jsonPath("$[0].clientId") { value(account.clientId) }
+                jsonPath("$[0].iban") { value(account.iban) }
+            }
 
         verify(exactly = 1) { clientService.getClientAccounts(clientId) }
     }
@@ -88,8 +92,10 @@ class ClientControllerTest {
         every { clientService.getClientAccounts(clientId) } throws ClientNotFoundException(clientId)
 
         mockMvc
-            .perform(get("/api/clients/{clientId}/accounts", clientId))
-            .andExpect(status().isNotFound)
+            .get("/api/clients/{clientId}/accounts", clientId)
+            .andExpect {
+                status { isNotFound() }
+            }
 
         verify(exactly = 1) { clientService.getClientAccounts(clientId) }
     }
@@ -102,33 +108,33 @@ class ClientControllerTest {
         every { clientService.createClient(command) } returns createdClient
 
         mockMvc
-            .perform(
-                post("/api/clients")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "name": {
-                            "name": "${request.name.name}",
-                            "firstName": "${request.name.firstName}"
-                          },
-                          "address": {
-                            "street": "${request.address.street}",
-                            "number": "${request.address.number}",
-                            "zipCode": "${request.address.zipCode}",
-                            "city": "${request.address.city}"
-                          }
-                        }
-                        """.trimIndent(),
-                    ),
-            ).andExpect(status().isCreated)
-            .andExpect(jsonPath("$.id").value(createdClient.id))
-            .andExpect(jsonPath("$.name.name").value(createdClient.name.name))
-            .andExpect(jsonPath("$.name.firstName").value(createdClient.name.firstName))
-            .andExpect(jsonPath("$.address.street").value(createdClient.address.street))
-            .andExpect(jsonPath("$.address.number").value(createdClient.address.number))
-            .andExpect(jsonPath("$.address.zipCode").value(createdClient.address.zipCode))
-            .andExpect(jsonPath("$.address.city").value(createdClient.address.city))
+            .post("/api/clients") {
+                contentType = MediaType.APPLICATION_JSON
+                content =
+                    """
+                    {
+                      "name": {
+                        "name": "${request.name.name}",
+                        "firstName": "${request.name.firstName}"
+                      },
+                      "address": {
+                        "street": "${request.address.street}",
+                        "number": "${request.address.number}",
+                        "zipCode": "${request.address.zipCode}",
+                        "city": "${request.address.city}"
+                      }
+                    }
+                    """.trimIndent()
+            }.andExpect {
+                status { isCreated() }
+                jsonPath("$.id") { value(createdClient.id) }
+                jsonPath("$.name.name") { value(createdClient.name.name) }
+                jsonPath("$.name.firstName") { value(createdClient.name.firstName) }
+                jsonPath("$.address.street") { value(createdClient.address.street) }
+                jsonPath("$.address.number") { value(createdClient.address.number) }
+                jsonPath("$.address.zipCode") { value(createdClient.address.zipCode) }
+                jsonPath("$.address.city") { value(createdClient.address.city) }
+            }
 
         verify(exactly = 1) { clientService.createClient(command) }
     }
@@ -141,34 +147,34 @@ class ClientControllerTest {
         every { clientService.updateClient(command) } returns updatedClient
 
         mockMvc
-            .perform(
-                put("/api/clients")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "id": "${request.id}",
-                          "name": {
-                            "name": "${request.name?.name}",
-                            "firstName": "${request.name?.firstName}"
-                          },
-                          "address": {
-                            "street": "${request.address?.street}",
-                            "number": "${request.address?.number}",
-                            "zipCode": "${request.address?.zipCode}",
-                            "city": "${request.address?.city}"
-                          }
-                        }
-                        """.trimIndent(),
-                    ),
-            ).andExpect(status().isOk)
-            .andExpect(jsonPath("$.id").value(updatedClient.id))
-            .andExpect(jsonPath("$.name.name").value(updatedClient.name.name))
-            .andExpect(jsonPath("$.name.firstName").value(updatedClient.name.firstName))
-            .andExpect(jsonPath("$.address.street").value(updatedClient.address.street))
-            .andExpect(jsonPath("$.address.number").value(updatedClient.address.number))
-            .andExpect(jsonPath("$.address.zipCode").value(updatedClient.address.zipCode))
-            .andExpect(jsonPath("$.address.city").value(updatedClient.address.city))
+            .put("/api/clients") {
+                contentType = MediaType.APPLICATION_JSON
+                content =
+                    """
+                    {
+                      "id": "${request.id}",
+                      "name": {
+                        "name": "${request.name?.name}",
+                        "firstName": "${request.name?.firstName}"
+                      },
+                      "address": {
+                        "street": "${request.address?.street}",
+                        "number": "${request.address?.number}",
+                        "zipCode": "${request.address?.zipCode}",
+                        "city": "${request.address?.city}"
+                      }
+                    }
+                    """.trimIndent()
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value(updatedClient.id) }
+                jsonPath("$.name.name") { value(updatedClient.name.name) }
+                jsonPath("$.name.firstName") { value(updatedClient.name.firstName) }
+                jsonPath("$.address.street") { value(updatedClient.address.street) }
+                jsonPath("$.address.number") { value(updatedClient.address.number) }
+                jsonPath("$.address.zipCode") { value(updatedClient.address.zipCode) }
+                jsonPath("$.address.city") { value(updatedClient.address.city) }
+            }
 
         verify(exactly = 1) { clientService.updateClient(command) }
     }
@@ -179,8 +185,10 @@ class ClientControllerTest {
         every { clientService.deleteClient(clientId) } just runs
 
         mockMvc
-            .perform(delete("/api/clients/{clientId}", clientId))
-            .andExpect(status().isNoContent)
+            .delete("/api/clients/{clientId}", clientId)
+            .andExpect {
+                status { isNoContent() }
+            }
 
         verify(exactly = 1) { clientService.deleteClient(clientId) }
     }
@@ -191,8 +199,10 @@ class ClientControllerTest {
         every { clientService.deleteClient(clientId) } throws ClientNotFoundException(clientId)
 
         mockMvc
-            .perform(delete("/api/clients/{clientId}", clientId))
-            .andExpect(status().isNotFound)
+            .delete("/api/clients/{clientId}", clientId)
+            .andExpect {
+                status { isNotFound() }
+            }
 
         verify(exactly = 1) { clientService.deleteClient(clientId) }
     }
@@ -206,27 +216,27 @@ class ClientControllerTest {
 
         // Act
         mockMvc
-            .perform(
-                put("/api/clients")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "id": "${request.id}",
-                          "name": {
-                            "name": "${request.name?.name}",
-                            "firstName": "${request.name?.firstName}"
-                          },
-                          "address": {
-                            "street": "${request.address?.street}",
-                            "number": "${request.address?.number}",
-                            "zipCode": "${request.address?.zipCode}",
-                            "city": "${request.address?.city}"
-                          }
-                        }
-                        """.trimIndent(),
-                    ),
-            ).andExpect(status().isNotFound)
+            .put("/api/clients") {
+                contentType = MediaType.APPLICATION_JSON
+                content =
+                    """
+                    {
+                      "id": "${request.id}",
+                      "name": {
+                        "name": "${request.name?.name}",
+                        "firstName": "${request.name?.firstName}"
+                      },
+                      "address": {
+                        "street": "${request.address?.street}",
+                        "number": "${request.address?.number}",
+                        "zipCode": "${request.address?.zipCode}",
+                        "city": "${request.address?.city}"
+                      }
+                    }
+                    """.trimIndent()
+            }.andExpect {
+                status { isNotFound() }
+            }
 
         // Assert
         verify(exactly = 1) { clientService.updateClient(command) }

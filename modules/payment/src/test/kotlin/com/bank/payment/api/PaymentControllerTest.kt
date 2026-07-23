@@ -13,9 +13,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
@@ -39,16 +37,17 @@ class PaymentControllerTest {
         every { paymentService.transferMoney(fromIban, toIban, amount) } returns transaction
 
         mockMvc
-            .perform(
-                post("/api/payments/transfer")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(transferJson(fromIban, toIban, amount)),
-            ).andExpect(status().isOk)
-            .andExpect(jsonPath("$.id").value(transaction.id))
-            .andExpect(jsonPath("$.bankAccountId").value(transaction.accountId))
-            .andExpect(jsonPath("$.amount").value(100.00))
-            .andExpect(jsonPath("$.type").value(TransactionType.TRANSFER.name))
-            .andExpect(jsonPath("$.createdAt").value(transaction.createdAt.toString()))
+            .post("/api/payments/transfer") {
+                contentType = MediaType.APPLICATION_JSON
+                content = transferJson(fromIban, toIban, amount)
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value(transaction.id) }
+                jsonPath("$.bankAccountId") { value(transaction.accountId) }
+                jsonPath("$.amount") { value(100.00) }
+                jsonPath("$.type") { value(TransactionType.TRANSFER.name) }
+                jsonPath("$.createdAt") { value(transaction.createdAt.toString()) }
+            }
 
         verify(exactly = 1) { paymentService.transferMoney(fromIban, toIban, amount) }
     }
@@ -63,11 +62,12 @@ class PaymentControllerTest {
         } throws PaymentAccountNotFoundException("Account not found")
 
         mockMvc
-            .perform(
-                post("/api/payments/transfer")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(transferJson(fromIban, toIban, amount)),
-            ).andExpect(status().isNotFound)
+            .post("/api/payments/transfer") {
+                contentType = MediaType.APPLICATION_JSON
+                content = transferJson(fromIban, toIban, amount)
+            }.andExpect {
+                status { isNotFound() }
+            }
 
         verify(exactly = 1) { paymentService.transferMoney(fromIban, toIban, amount) }
     }
@@ -80,11 +80,12 @@ class PaymentControllerTest {
         every { paymentService.transferMoney(fromIban, toIban, amount) } throws RuntimeException("boom")
 
         mockMvc
-            .perform(
-                post("/api/payments/transfer")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(transferJson(fromIban, toIban, amount)),
-            ).andExpect(status().isInternalServerError)
+            .post("/api/payments/transfer") {
+                contentType = MediaType.APPLICATION_JSON
+                content = transferJson(fromIban, toIban, amount)
+            }.andExpect {
+                status { isInternalServerError() }
+            }
 
         verify(exactly = 1) { paymentService.transferMoney(fromIban, toIban, amount) }
     }
@@ -96,11 +97,12 @@ class PaymentControllerTest {
         every { paymentService.withdrawMoney(accountId, amount) } just runs
 
         mockMvc
-            .perform(
-                post("/api/payments/withdrawal")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(paymentJson(accountId, amount)),
-            ).andExpect(status().isOk)
+            .post("/api/payments/withdrawal") {
+                contentType = MediaType.APPLICATION_JSON
+                content = paymentJson(accountId, amount)
+            }.andExpect {
+                status { isOk() }
+            }
 
         verify(exactly = 1) { paymentService.withdrawMoney(accountId, amount) }
     }
@@ -112,11 +114,12 @@ class PaymentControllerTest {
         every { paymentService.withdrawMoney(accountId, amount) } throws RuntimeException("boom")
 
         mockMvc
-            .perform(
-                post("/api/payments/withdrawal")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(paymentJson(accountId, amount)),
-            ).andExpect(status().isInternalServerError)
+            .post("/api/payments/withdrawal") {
+                contentType = MediaType.APPLICATION_JSON
+                content = paymentJson(accountId, amount)
+            }.andExpect {
+                status { isInternalServerError() }
+            }
 
         verify(exactly = 1) { paymentService.withdrawMoney(accountId, amount) }
     }
@@ -128,11 +131,12 @@ class PaymentControllerTest {
         every { paymentService.depositMoney(accountId, amount) } just runs
 
         mockMvc
-            .perform(
-                post("/api/payments/deposit")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(paymentJson(accountId, amount)),
-            ).andExpect(status().isOk)
+            .post("/api/payments/deposit") {
+                contentType = MediaType.APPLICATION_JSON
+                content = paymentJson(accountId, amount)
+            }.andExpect {
+                status { isOk() }
+            }
 
         verify(exactly = 1) { paymentService.depositMoney(accountId, amount) }
     }
@@ -144,11 +148,12 @@ class PaymentControllerTest {
         every { paymentService.depositMoney(accountId, amount) } throws RuntimeException("boom")
 
         mockMvc
-            .perform(
-                post("/api/payments/deposit")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(paymentJson(accountId, amount)),
-            ).andExpect(status().isInternalServerError)
+            .post("/api/payments/deposit") {
+                contentType = MediaType.APPLICATION_JSON
+                content = paymentJson(accountId, amount)
+            }.andExpect {
+                status { isInternalServerError() }
+            }
 
         verify(exactly = 1) { paymentService.depositMoney(accountId, amount) }
     }
