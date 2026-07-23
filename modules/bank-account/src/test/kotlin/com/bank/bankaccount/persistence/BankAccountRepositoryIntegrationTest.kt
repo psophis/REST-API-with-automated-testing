@@ -51,9 +51,12 @@ class BankAccountRepositoryIntegrationTest {
 
         // Assert
         Assertions.assertThat(loaded).isNotNull
-        org.junit.jupiter.api.Assertions.assertEquals(bankAccount.id, loaded?.id)
-        org.junit.jupiter.api.Assertions.assertEquals(bankAccount.clientId, loaded?.clientId)
-        org.junit.jupiter.api.Assertions.assertEquals(bankAccount.iban, loaded?.iban)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(bankAccount.id, loaded?.id)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(bankAccount.clientId, loaded?.clientId)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(bankAccount.iban, loaded?.iban)
     }
 
     @Test
@@ -77,7 +80,8 @@ class BankAccountRepositoryIntegrationTest {
 
         // Assert
         Assertions.assertThat(result).isNotNull
-        org.junit.jupiter.api.Assertions.assertEquals(bankAccountId, result?.id)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(bankAccountId, result?.id)
     }
 
     @Test
@@ -86,7 +90,8 @@ class BankAccountRepositoryIntegrationTest {
         val result = bankAccountRepository.getBankAccountByIban("UNKNOWN")
 
         // Assert
-        org.junit.jupiter.api.Assertions.assertNull(result)
+        org.junit.jupiter.api.Assertions
+            .assertNull(result)
     }
 
     @Test
@@ -113,7 +118,8 @@ class BankAccountRepositoryIntegrationTest {
 
         // Assert
         val updated = bankAccountJpaRepository.findById(bankAccountId).get()
-        org.junit.jupiter.api.Assertions.assertEquals(BigDecimal("150"), updated.balance)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(BigDecimal("150"), updated.balance)
     }
 
     @Test
@@ -140,7 +146,8 @@ class BankAccountRepositoryIntegrationTest {
 
         // Assert
         val updated = bankAccountJpaRepository.findById(bankAccountId).get()
-        org.junit.jupiter.api.Assertions.assertEquals(BigDecimal("60"), updated.balance)
+        org.junit.jupiter.api.Assertions
+            .assertEquals(BigDecimal("60"), updated.balance)
     }
 
     @Test
@@ -165,7 +172,8 @@ class BankAccountRepositoryIntegrationTest {
         val deleted = bankAccountJpaRepository.findById(bankAccountId)
 
         // Assert
-        org.junit.jupiter.api.Assertions.assertTrue(deleted.isEmpty)
+        org.junit.jupiter.api.Assertions
+            .assertTrue(deleted.isEmpty)
     }
 
     @Test
@@ -184,7 +192,8 @@ class BankAccountRepositoryIntegrationTest {
     fun `should return null when account id is not found`() {
         val result = bankAccountRepository.getBankAccountById("non-existent-id")
 
-        org.junit.jupiter.api.Assertions.assertNull(result)
+        org.junit.jupiter.api.Assertions
+            .assertNull(result)
     }
 
     @Test
@@ -215,9 +224,12 @@ class BankAccountRepositoryIntegrationTest {
         val result = bankAccountRepository.getBankAccountsByClientId(clientId)
 
         // Assert
-        org.junit.jupiter.api.Assertions.assertEquals(2, result.size)
-        org.junit.jupiter.api.Assertions.assertTrue(result.any { it.id == firstAccount.id })
-        org.junit.jupiter.api.Assertions.assertTrue(result.any { it.id == secondAccount.id })
+        org.junit.jupiter.api.Assertions
+            .assertEquals(2, result.size)
+        org.junit.jupiter.api.Assertions
+            .assertTrue(result.any { it.id == firstAccount.id })
+        org.junit.jupiter.api.Assertions
+            .assertTrue(result.any { it.id == secondAccount.id })
     }
 
     @Test
@@ -226,7 +238,8 @@ class BankAccountRepositoryIntegrationTest {
         val result = bankAccountRepository.getBankAccountsByClientId("unknown-client")
 
         // Assert
-        org.junit.jupiter.api.Assertions.assertTrue(result.isEmpty())
+        org.junit.jupiter.api.Assertions
+            .assertTrue(result.isEmpty())
     }
 
     @Test
@@ -340,9 +353,12 @@ class BankAccountRepositoryIntegrationTest {
         bankAccountRepository.deleteBankAccountsByClientId(clientId)
 
         // Assert
-        org.junit.jupiter.api.Assertions.assertTrue(bankAccountJpaRepository.findById(firstAccount.id).isEmpty)
-        org.junit.jupiter.api.Assertions.assertTrue(bankAccountJpaRepository.findById(secondAccount.id).isEmpty)
-        org.junit.jupiter.api.Assertions.assertTrue(bankAccountJpaRepository.findById(otherClientAccount.id).isPresent)
+        org.junit.jupiter.api.Assertions
+            .assertTrue(bankAccountJpaRepository.findById(firstAccount.id).isEmpty)
+        org.junit.jupiter.api.Assertions
+            .assertTrue(bankAccountJpaRepository.findById(secondAccount.id).isEmpty)
+        org.junit.jupiter.api.Assertions
+            .assertTrue(bankAccountJpaRepository.findById(otherClientAccount.id).isPresent)
     }
 
     @Test
@@ -363,6 +379,7 @@ class BankAccountRepositoryIntegrationTest {
         bankAccountRepository.deleteBankAccountsByClientId("unknown-client")
 
         // Assert
-        org.junit.jupiter.api.Assertions.assertTrue(bankAccountJpaRepository.findById(entity.id).isPresent)
+        org.junit.jupiter.api.Assertions
+            .assertTrue(bankAccountJpaRepository.findById(entity.id).isPresent)
     }
 }
