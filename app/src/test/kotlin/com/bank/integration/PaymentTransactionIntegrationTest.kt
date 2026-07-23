@@ -14,8 +14,10 @@ import com.bank.payment.persistence.TransactionJpaRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.dao.InvalidDataAccessApiUsageException
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -142,6 +144,50 @@ class PaymentTransactionIntegrationTest {
         assertThat(transactions.single().type).isEqualTo(TransactionType.WITHDRAWAL)
         assertThat(transactions.single().senderIban).isEqualTo(account.iban)
         assertThat(transactions.single().recipientIban).isEqualTo(account.iban)
+    }
+
+    @Test
+    fun `should roll back transaction when withdrawing more than account balance`() {
+        // Arrange
+        val client =
+            clientJpaRepository.save(
+                ClientEntity(
+                    id = UUID.randomUUID().toString(),
+                    lastName = "Smith",
+                    firstName = "Jane",
+                    street = "Main Street",
+                    number = "45",
+                    city = "Berlin",
+                    zipCode = "12345",
+                ),
+            )
+        val account =
+            bankAccountJpaRepository.save(
+                BankAccountEntity(
+                    id = UUID.randomUUID().toString(),
+                    clientId = client.id,
+                    iban = "DE12345678901234567890",
+                    balance = BigDecimal("100.00"),
+                    createdAt = Instant.now(),
+                ),
+            )
+        val withdrawalRequest =
+            WithdrawalRequest(
+                bankAccountId = account.id,
+                amount = BigDecimal("150.00"),
+            )
+
+        // Act
+        assertThrows<InvalidDataAccessApiUsageException> {
+            paymentController.withdrawMoney(withdrawalRequest)
+        }
+
+        // Assert
+        val unchangedAccount = bankAccountJpaRepository.findById(account.id).orElseThrow()
+        assertThat(unchangedAccount.balance).isEqualTo(BigDecimal("100.00"))
+
+        val transactions = transactionJpaRepository.findAllByAccountId(account.id)
+        assertThat(transactions).isEmpty()
     }
 
     @Test
