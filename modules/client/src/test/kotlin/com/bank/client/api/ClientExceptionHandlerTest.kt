@@ -7,9 +7,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 
@@ -30,8 +28,10 @@ class ClientExceptionHandlerTest {
         every { clientService.getClient(clientId) } throws ClientNotFoundException(clientId)
 
         mockMvc
-            .perform(get("/api/clients/{clientId}", clientId))
-            .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.message").value("Could not find client with id $clientId"))
+            .get("/api/clients/{clientId}", clientId)
+            .andExpect {
+                status { isNotFound() }
+                jsonPath("$.message") { value("Could not find client with id $clientId") }
+            }
     }
 }

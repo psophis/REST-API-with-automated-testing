@@ -8,9 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
@@ -39,12 +37,13 @@ class PaymentExceptionHandlerTest {
 
         // Act/Assert
         mockMvc
-            .perform(
-                post("/api/payments/transfer")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(transferJson(fromIban, toIban, amount)),
-            ).andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.message").value("Account not found"))
+            .post("/api/payments/transfer") {
+                contentType = MediaType.APPLICATION_JSON
+                content = transferJson(fromIban, toIban, amount)
+            }.andExpect {
+                status { isNotFound() }
+                jsonPath("$.message") { value("Account not found") }
+            }
     }
 
     @Test
@@ -60,12 +59,13 @@ class PaymentExceptionHandlerTest {
 
         // Act/Assert
         mockMvc
-            .perform(
-                post("/api/payments/transfer")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(transferJson(fromIban, toIban, amount)),
-            ).andExpect(status().isInternalServerError)
-            .andExpect(jsonPath("$.message").value("boom"))
+            .post("/api/payments/transfer") {
+                contentType = MediaType.APPLICATION_JSON
+                content = transferJson(fromIban, toIban, amount)
+            }.andExpect {
+                status { isInternalServerError() }
+                jsonPath("$.message") { value("boom") }
+            }
     }
 
     private fun transferJson(

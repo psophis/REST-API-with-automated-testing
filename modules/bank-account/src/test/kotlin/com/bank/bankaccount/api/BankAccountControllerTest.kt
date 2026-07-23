@@ -12,11 +12,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.delete
+import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
@@ -37,12 +35,14 @@ class BankAccountControllerTest {
         every { bankAccountService.getBankAccount(account.id) } returns account
 
         mockMvc
-            .perform(get("/api/accounts/{bankAccountId}", account.id))
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.id").value(account.id))
-            .andExpect(jsonPath("$.clientId").value(account.clientId))
-            .andExpect(jsonPath("$.iban").value(account.iban))
-            .andExpect(jsonPath("$.balance").value(100.00))
+            .get("/api/accounts/{bankAccountId}", account.id)
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value(account.id) }
+                jsonPath("$.clientId") { value(account.clientId) }
+                jsonPath("$.iban") { value(account.iban) }
+                jsonPath("$.balance") { value(100.00) }
+            }
 
         verify(exactly = 1) { bankAccountService.getBankAccount(account.id) }
     }
@@ -53,8 +53,10 @@ class BankAccountControllerTest {
         every { bankAccountService.getBankAccount(accountId) } throws BankAccountNotFoundException(accountId)
 
         mockMvc
-            .perform(get("/api/accounts/{bankAccountId}", accountId))
-            .andExpect(status().isNotFound)
+            .get("/api/accounts/{bankAccountId}", accountId)
+            .andExpect {
+                status { isNotFound() }
+            }
 
         verify(exactly = 1) { bankAccountService.getBankAccount(accountId) }
     }
@@ -68,15 +70,16 @@ class BankAccountControllerTest {
         every { bankAccountService.createBankAccount(clientId) } returns account
 
         mockMvc
-            .perform(
-                post("/api/accounts")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"clientId":"$clientId"}"""),
-            ).andExpect(status().isCreated)
-            .andExpect(jsonPath("$.id").value(account.id))
-            .andExpect(jsonPath("$.clientId").value(account.clientId))
-            .andExpect(jsonPath("$.iban").value(account.iban))
-            .andExpect(jsonPath("$.balance").value(100.00))
+            .post("/api/accounts") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"clientId":"$clientId"}"""
+            }.andExpect {
+                status { isCreated() }
+                jsonPath("$.id") { value(account.id) }
+                jsonPath("$.clientId") { value(account.clientId) }
+                jsonPath("$.iban") { value(account.iban) }
+                jsonPath("$.balance") { value(100.00) }
+            }
 
         verify(exactly = 1) { bankAccountService.createBankAccount(clientId) }
     }
@@ -87,10 +90,11 @@ class BankAccountControllerTest {
         every { bankAccountService.deleteBankAccount(account.id) } just runs
 
         mockMvc
-            .perform(
-                delete("/api/accounts/{accountId}", account.id)
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(status().isNoContent)
+            .delete("/api/accounts/{accountId}", account.id) {
+                contentType = MediaType.APPLICATION_JSON
+            }.andExpect {
+                status { isNoContent() }
+            }
 
         verify(exactly = 1) { bankAccountService.deleteBankAccount(account.id) }
     }
@@ -101,11 +105,12 @@ class BankAccountControllerTest {
         every { bankAccountService.createBankAccount(any()) } throws IllegalArgumentException()
 
         mockMvc
-            .perform(
-                post("/api/accounts")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"clientId":"$clientId"}"""),
-            ).andExpect(status().isBadRequest)
+            .post("/api/accounts") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"clientId":"$clientId"}"""
+            }.andExpect {
+                status { isBadRequest() }
+            }
 
         verify(exactly = 1) { bankAccountService.createBankAccount(any()) }
     }

@@ -9,9 +9,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 import java.math.BigDecimal
@@ -33,13 +31,15 @@ class TransactionControllerTest {
         every { transactionService.getAccountTransactions(accountId) } returns listOf(transaction)
 
         mockMvc
-            .perform(get("/api/transactions/{accountId}/transactions", accountId))
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$[0].id").value(transaction.id))
-            .andExpect(jsonPath("$[0].bankAccountId").value(accountId))
-            .andExpect(jsonPath("$[0].amount").value(100.00))
-            .andExpect(jsonPath("$[0].type").value(TransactionType.TRANSFER.name))
-            .andExpect(jsonPath("$[0].createdAt").value(transaction.createdAt.toString()))
+            .get("/api/transactions/{accountId}/transactions", accountId)
+            .andExpect {
+                status { isOk() }
+                jsonPath("$[0].id") { value(transaction.id) }
+                jsonPath("$[0].bankAccountId") { value(accountId) }
+                jsonPath("$[0].amount") { value(100.00) }
+                jsonPath("$[0].type") { value(TransactionType.TRANSFER.name) }
+                jsonPath("$[0].createdAt") { value(transaction.createdAt.toString()) }
+            }
 
         verify(exactly = 1) { transactionService.getAccountTransactions(accountId) }
     }
@@ -50,9 +50,11 @@ class TransactionControllerTest {
         every { transactionService.getAccountTransactions(accountId) } returns emptyList()
 
         mockMvc
-            .perform(get("/api/transactions/{accountId}/transactions", accountId))
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$").isEmpty)
+            .get("/api/transactions/{accountId}/transactions", accountId)
+            .andExpect {
+                status { isOk() }
+                jsonPath("$") { isEmpty() }
+            }
 
         verify(exactly = 1) { transactionService.getAccountTransactions(accountId) }
     }
@@ -63,8 +65,10 @@ class TransactionControllerTest {
         every { transactionService.getAccountTransactions(accountId) } throws RuntimeException("boom")
 
         mockMvc
-            .perform(get("/api/transactions/{accountId}/transactions", accountId))
-            .andExpect(status().isInternalServerError)
+            .get("/api/transactions/{accountId}/transactions", accountId)
+            .andExpect {
+                status { isInternalServerError() }
+            }
 
         verify(exactly = 1) { transactionService.getAccountTransactions(accountId) }
     }
@@ -76,13 +80,15 @@ class TransactionControllerTest {
         every { transactionService.getTransaction(transactionId) } returns transaction
 
         mockMvc
-            .perform(get("/api/transactions/{transactionId}", transactionId))
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.id").value(transaction.id))
-            .andExpect(jsonPath("$.bankAccountId").value(transaction.accountId))
-            .andExpect(jsonPath("$.amount").value(100.00))
-            .andExpect(jsonPath("$.type").value(TransactionType.TRANSFER.name))
-            .andExpect(jsonPath("$.createdAt").value(transaction.createdAt.toString()))
+            .get("/api/transactions/{transactionId}", transactionId)
+            .andExpect {
+                status { isOk() }
+                jsonPath("$.id") { value(transaction.id) }
+                jsonPath("$.bankAccountId") { value(transaction.accountId) }
+                jsonPath("$.amount") { value(100.00) }
+                jsonPath("$.type") { value(TransactionType.TRANSFER.name) }
+                jsonPath("$.createdAt") { value(transaction.createdAt.toString()) }
+            }
 
         verify(exactly = 1) { transactionService.getTransaction(transactionId) }
     }
@@ -93,8 +99,10 @@ class TransactionControllerTest {
         every { transactionService.getTransaction(transactionId) } throws RuntimeException("boom")
 
         mockMvc
-            .perform(get("/api/transactions/{transactionId}", transactionId))
-            .andExpect(status().isInternalServerError)
+            .get("/api/transactions/{transactionId}", transactionId)
+            .andExpect {
+                status { isInternalServerError() }
+            }
 
         verify(exactly = 1) { transactionService.getTransaction(transactionId) }
     }

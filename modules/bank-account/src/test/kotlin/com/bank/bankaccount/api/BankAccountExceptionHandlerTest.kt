@@ -8,9 +8,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 
@@ -30,8 +29,10 @@ class BankAccountExceptionHandlerTest {
         every { bankAccountService.getBankAccount(accountId) } throws BankAccountNotFoundException(accountId)
 
         mockMvc
-            .perform(get("/api/accounts/{bankAccountId}", accountId))
-            .andExpect(status().isNotFound)
+            .get("/api/accounts/{bankAccountId}", accountId)
+            .andExpect {
+                status { isNotFound() }
+            }
     }
 
     @Test
@@ -39,10 +40,11 @@ class BankAccountExceptionHandlerTest {
         every { bankAccountService.createBankAccount("") } throws IllegalArgumentException("ClientId cannot be blank")
 
         mockMvc
-            .perform(
-                post("/api/accounts")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"clientId":""}"""),
-            ).andExpect(status().isBadRequest)
+            .post("/api/accounts") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"clientId":""}"""
+            }.andExpect {
+                status { isBadRequest() }
+            }
     }
 }

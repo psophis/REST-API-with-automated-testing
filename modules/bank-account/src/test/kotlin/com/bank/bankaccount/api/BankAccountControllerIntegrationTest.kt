@@ -11,9 +11,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.post
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -40,15 +38,16 @@ class BankAccountControllerIntegrationTest {
             )
 
         mockMvc
-            .perform(
-                post("/api/accounts")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"clientId":"client-id"}"""),
-            ).andExpect(status().isCreated)
-            .andExpect(jsonPath("$.id").value("account-id"))
-            .andExpect(jsonPath("$.clientId").value("client-id"))
-            .andExpect(jsonPath("$.iban").value("DE02100100100006820101"))
-            .andExpect(jsonPath("$.balance").value(0))
+            .post("/api/accounts") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"clientId":"client-id"}"""
+            }.andExpect {
+                status { isCreated() }
+                jsonPath("$.id") { value("account-id") }
+                jsonPath("$.clientId") { value("client-id") }
+                jsonPath("$.iban") { value("DE02100100100006820101") }
+                jsonPath("$.balance") { value(0) }
+            }
     }
 
     @SpringBootConfiguration
