@@ -72,8 +72,8 @@ jobs:
           title: Code Coverage
           update-comment: true
           comment-type: both
-          min-coverage-overall: 0
-          min-coverage-changed-files: 0
+          min-coverage-overall: 80
+          min-coverage-changed-files: 80
 
       - name: Convert JUnit reports to CTRF
         if: ${{ !cancelled() }}
