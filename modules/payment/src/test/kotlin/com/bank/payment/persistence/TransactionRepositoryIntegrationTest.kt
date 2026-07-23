@@ -88,7 +88,8 @@ class TransactionRepositoryIntegrationTest {
         Assertions.assertThat(transactions).hasSize(2)
         Assertions.assertThat(transactions).containsExactlyInAnyOrder(transaction1, transaction2)
         Assertions.assertThat(transactions.map { it.id }).containsExactly(transaction1.id, transaction2.id)
-        Assertions.assertThat(transactions.map { it.amount })
+        Assertions
+            .assertThat(transactions.map { it.amount })
             .containsExactly(BigDecimal("100.00"), BigDecimal("200.00"))
         Assertions.assertThat(transactions.map { it.type }).containsExactly(TransactionType.WITHDRAWAL, TransactionType.DEPOSIT)
     }
