@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.Instant
-import kotlin.test.assertEquals
 
 class BankAccountServiceTest {
     private lateinit var bankAccountRepository: BankAccountRepository
@@ -48,7 +47,7 @@ class BankAccountServiceTest {
         val result = bankAccountService.getBankAccount(bankAccount.id)
 
         // Assert
-        assertEquals(bankAccount, result)
+        assertThat(result).isEqualTo(bankAccount)
         verify(exactly = 1) { bankAccountRepository.getBankAccountById(bankAccount.id) }
     }
 
@@ -79,9 +78,9 @@ class BankAccountServiceTest {
             )
 
         // Assert
-        assertEquals(clientId, result.clientId)
-        assertEquals(iban, result.iban)
-        assertEquals(BigDecimal.ZERO, result.balance)
+        assertThat(result.clientId).isEqualTo(clientId)
+        assertThat(result.iban).isEqualTo(iban)
+        assertThat(result.balance).isEqualTo(BigDecimal.ZERO)
         verify(exactly = 1) { ibanGenerator.generateIban() }
         verify(exactly = 1) { bankAccountRepository.createBankAccount(any()) }
     }

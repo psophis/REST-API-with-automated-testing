@@ -1,7 +1,7 @@
 package com.bank.bankaccount.persistence
 
 import com.bank.bankaccount.domain.BankAccount
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringBootConfiguration
@@ -50,13 +50,10 @@ class BankAccountRepositoryIntegrationTest {
         val loaded = bankAccountRepository.getBankAccountById(bankAccountId)
 
         // Assert
-        Assertions.assertThat(loaded).isNotNull
-        org.junit.jupiter.api.Assertions
-            .assertEquals(bankAccount.id, loaded?.id)
-        org.junit.jupiter.api.Assertions
-            .assertEquals(bankAccount.clientId, loaded?.clientId)
-        org.junit.jupiter.api.Assertions
-            .assertEquals(bankAccount.iban, loaded?.iban)
+        assertThat(loaded).isNotNull
+        assertThat(loaded?.id).isEqualTo(bankAccount.id)
+        assertThat(loaded?.clientId).isEqualTo(bankAccount.clientId)
+        assertThat(loaded?.iban).isEqualTo(bankAccount.iban)
     }
 
     @Test
@@ -79,9 +76,8 @@ class BankAccountRepositoryIntegrationTest {
         val result = bankAccountRepository.getBankAccountByIban(iban)
 
         // Assert
-        Assertions.assertThat(result).isNotNull
-        org.junit.jupiter.api.Assertions
-            .assertEquals(bankAccountId, result?.id)
+        assertThat(result).isNotNull
+        assertThat(result?.id).isEqualTo(bankAccountId)
     }
 
     @Test
@@ -90,8 +86,7 @@ class BankAccountRepositoryIntegrationTest {
         val result = bankAccountRepository.getBankAccountByIban("UNKNOWN")
 
         // Assert
-        org.junit.jupiter.api.Assertions
-            .assertNull(result)
+        assertThat(result).isNull()
     }
 
     @Test
@@ -118,8 +113,7 @@ class BankAccountRepositoryIntegrationTest {
 
         // Assert
         val updated = bankAccountJpaRepository.findById(bankAccountId).get()
-        org.junit.jupiter.api.Assertions
-            .assertEquals(BigDecimal("150"), updated.balance)
+        assertThat(updated.balance).isEqualByComparingTo("150")
     }
 
     @Test
@@ -146,8 +140,7 @@ class BankAccountRepositoryIntegrationTest {
 
         // Assert
         val updated = bankAccountJpaRepository.findById(bankAccountId).get()
-        org.junit.jupiter.api.Assertions
-            .assertEquals(BigDecimal("60"), updated.balance)
+        assertThat(updated.balance).isEqualByComparingTo("60")
     }
 
     @Test
@@ -172,8 +165,7 @@ class BankAccountRepositoryIntegrationTest {
         val deleted = bankAccountJpaRepository.findById(bankAccountId)
 
         // Assert
-        org.junit.jupiter.api.Assertions
-            .assertTrue(deleted.isEmpty)
+        assertThat(deleted.isEmpty).isTrue()
     }
 
     @Test
@@ -192,8 +184,7 @@ class BankAccountRepositoryIntegrationTest {
     fun `should return null when account id is not found`() {
         val result = bankAccountRepository.getBankAccountById("non-existent-id")
 
-        org.junit.jupiter.api.Assertions
-            .assertNull(result)
+        assertThat(result).isNull()
     }
 
     @Test
@@ -224,12 +215,9 @@ class BankAccountRepositoryIntegrationTest {
         val result = bankAccountRepository.getBankAccountsByClientId(clientId)
 
         // Assert
-        org.junit.jupiter.api.Assertions
-            .assertEquals(2, result.size)
-        org.junit.jupiter.api.Assertions
-            .assertTrue(result.any { it.id == firstAccount.id })
-        org.junit.jupiter.api.Assertions
-            .assertTrue(result.any { it.id == secondAccount.id })
+        assertThat(result).hasSize(2)
+        assertThat(result).anyMatch { it.id == firstAccount.id }
+        assertThat(result).anyMatch { it.id == secondAccount.id }
     }
 
     @Test
@@ -238,8 +226,7 @@ class BankAccountRepositoryIntegrationTest {
         val result = bankAccountRepository.getBankAccountsByClientId("unknown-client")
 
         // Assert
-        org.junit.jupiter.api.Assertions
-            .assertTrue(result.isEmpty())
+        assertThat(result).isEmpty()
     }
 
     @Test
@@ -353,12 +340,9 @@ class BankAccountRepositoryIntegrationTest {
         bankAccountRepository.deleteBankAccountsByClientId(clientId)
 
         // Assert
-        org.junit.jupiter.api.Assertions
-            .assertTrue(bankAccountJpaRepository.findById(firstAccount.id).isEmpty)
-        org.junit.jupiter.api.Assertions
-            .assertTrue(bankAccountJpaRepository.findById(secondAccount.id).isEmpty)
-        org.junit.jupiter.api.Assertions
-            .assertTrue(bankAccountJpaRepository.findById(otherClientAccount.id).isPresent)
+        assertThat(bankAccountJpaRepository.findById(firstAccount.id).isEmpty).isTrue()
+        assertThat(bankAccountJpaRepository.findById(secondAccount.id).isEmpty).isTrue()
+        assertThat(bankAccountJpaRepository.findById(otherClientAccount.id).isPresent).isTrue()
     }
 
     @Test
@@ -379,7 +363,6 @@ class BankAccountRepositoryIntegrationTest {
         bankAccountRepository.deleteBankAccountsByClientId("unknown-client")
 
         // Assert
-        org.junit.jupiter.api.Assertions
-            .assertTrue(bankAccountJpaRepository.findById(entity.id).isPresent)
+        assertThat(bankAccountJpaRepository.findById(entity.id).isPresent).isTrue()
     }
 }

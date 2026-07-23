@@ -6,7 +6,7 @@ import com.bank.payment.domain.TransactionType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,13 +44,13 @@ class TransactionServiceTest {
         val response = transactionService.getTransaction(transactionId)
 
         // Assert
-        assertEquals(transactionId, response.id)
-        assertEquals(transaction.accountId, response.accountId)
-        assertEquals(transaction.senderIban, response.senderIban)
-        assertEquals(transaction.recipientIban, response.recipientIban)
-        assertEquals(transaction.amount, response.amount)
-        assertEquals(transaction.createdAt, response.createdAt)
-        assertEquals(transaction.createdAt, response.createdAt)
+        assertThat(response.id).isEqualTo(transactionId)
+        assertThat(response.accountId).isEqualTo(transaction.accountId)
+        assertThat(response.senderIban).isEqualTo(transaction.senderIban)
+        assertThat(response.recipientIban).isEqualTo(transaction.recipientIban)
+        assertThat(response.amount).isEqualByComparingTo(transaction.amount)
+        assertThat(response.createdAt).isEqualTo(transaction.createdAt)
+        assertThat(response.createdAt).isEqualTo(transaction.createdAt)
         verify(exactly = 1) { transactionRepository.getTransactionById(transactionId) }
     }
 
@@ -86,14 +86,14 @@ class TransactionServiceTest {
         val response = transactionService.getAccountTransactions(accountId)
 
         // Assert
-        assertEquals(transactions.size, response.size)
-        assertEquals(transactions[0].id, response.first().id)
-        assertEquals(transactions[0].accountId, response.first().accountId)
-        assertEquals(transactions[0].senderIban, response.first().senderIban)
-        assertEquals(transactions[0].recipientIban, response.first().recipientIban)
-        assertEquals(transactions[0].amount, response.first().amount)
-        assertEquals(transactions[0].createdAt, response.first().createdAt)
-        assertEquals(transactions[0].createdAt, response.first().createdAt)
+        assertThat(response.size).isEqualTo(transactions.size)
+        assertThat(response.first().id).isEqualTo(transactions[0].id)
+        assertThat(response.first().accountId).isEqualTo(transactions[0].accountId)
+        assertThat(response.first().senderIban).isEqualTo(transactions[0].senderIban)
+        assertThat(response.first().recipientIban).isEqualTo(transactions[0].recipientIban)
+        assertThat(response.first().amount).isEqualByComparingTo(transactions[0].amount)
+        assertThat(response.first().createdAt).isEqualTo(transactions[0].createdAt)
+        assertThat(response.first().createdAt).isEqualTo(transactions[0].createdAt)
         verify(exactly = 1) { transactionRepository.getTransactionsByAccountId(accountId) }
     }
 
@@ -117,7 +117,7 @@ class TransactionServiceTest {
         val response = transactionService.getAccountTransactions(accountId)
 
         // Assert
-        assert(response.isEmpty())
+        assertThat(response).isEmpty()
         verify(exactly = 1) { transactionRepository.getTransactionsByAccountId(accountId) }
     }
 }

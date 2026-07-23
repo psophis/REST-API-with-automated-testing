@@ -5,7 +5,7 @@ import com.bank.payment.domain.TransactionType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -46,7 +46,7 @@ class TransactionRepositoryImplTest {
         val loaded = transactionRepository.getTransactionById(transactionId)
 
         // Assert
-        assertEquals(transaction, loaded)
+        assertThat(loaded).isEqualTo(transaction)
         verify(exactly = 1) { transactionJpaRepository.findById(transactionId) }
     }
 
@@ -63,7 +63,7 @@ class TransactionRepositoryImplTest {
             }
 
         // Assert
-        assertEquals("Transaction not found: $transactionId", exception.message)
+        assertThat(exception.message).isEqualTo("Transaction not found: $transactionId")
         verify(exactly = 1) { transactionJpaRepository.findById(transactionId) }
     }
 
@@ -99,11 +99,11 @@ class TransactionRepositoryImplTest {
         val loaded = transactionRepository.getTransactionsByAccountId(accountId)
 
         // Assert
-        assertEquals(2, loaded.size)
-        assertEquals(entities[0].id, loaded[0].id)
-        assertEquals(entities[0].amount, loaded[0].amount)
-        assertEquals(entities[1].id, loaded[1].id)
-        assertEquals(entities[1].type, loaded[1].type)
+        assertThat(loaded).hasSize(2)
+        assertThat(loaded[0].id).isEqualTo(entities[0].id)
+        assertThat(loaded[0].amount).isEqualByComparingTo(entities[0].amount)
+        assertThat(loaded[1].id).isEqualTo(entities[1].id)
+        assertThat(loaded[1].type).isEqualTo(entities[1].type)
         verify(exactly = 1) { transactionJpaRepository.findAllByAccountId(accountId) }
     }
 
@@ -136,7 +136,7 @@ class TransactionRepositoryImplTest {
         val created = transactionRepository.createTransaction(transaction)
 
         // Assert
-        assertEquals(transaction, created)
+        assertThat(created).isEqualTo(transaction)
         verify(exactly = 1) { transactionJpaRepository.save(any()) }
     }
 }
