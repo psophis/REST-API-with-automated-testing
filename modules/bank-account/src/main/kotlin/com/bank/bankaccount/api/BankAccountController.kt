@@ -24,7 +24,7 @@ class BankAccountController(
         return ResponseEntity.ok(bankAccount.toDto())
     }
 
-    @PostMapping
+    @PostMapping("/{bankAccountId}")
     fun createBankAccount(
         @RequestBody request: BankAccountRequest,
     ): ResponseEntity<BankAccountDto> {
