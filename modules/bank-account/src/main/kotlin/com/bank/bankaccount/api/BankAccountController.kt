@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/account")
+@RequestMapping("/api/accounts")
 class BankAccountController(
     private val bankAccountService: BankAccountService,
 ) {
