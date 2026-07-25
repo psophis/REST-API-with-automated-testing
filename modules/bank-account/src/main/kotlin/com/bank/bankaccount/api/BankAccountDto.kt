@@ -7,6 +7,6 @@ data class BankAccountDto(
     val id: String,
     val clientId: String,
     val iban: String,
-    val balance: Long,
+    val balance: BigDecimal,
     val createdAt: Instant,
 )
