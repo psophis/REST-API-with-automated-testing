@@ -33,7 +33,7 @@ class BankAccountController(
                 request.clientId,
             )
         return ResponseEntity
-            .status(HttpStatus.CREATED)
+            .status(HttpStatus.OK)
             .body(bankAccount.toDto())
     }
 
