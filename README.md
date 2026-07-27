@@ -12,9 +12,9 @@ Installation von Java 21, Docker, Git
 
 ### Klonen des Repositorys
 
-  ```bash
-  git clone https://github.com/psophis/REST-API-with-automated-testing.git
-  cd banking-backend
+```bash
+git clone https://github.com/psophis/REST-API-with-automated-testing.git
+cd banking-backend
 ```
 
 ### Konfiguration der Umgebungsvariablen
@@ -130,6 +130,25 @@ Contract-Tests eines bestimmten Moduls ausführen (bspw. `Client`):
 
 ```bash
 ./gradlew :modules:client:contractTest
+```
+
+## Continuous-Integration-Pipeline
+
+Bei jedem Push und jedem Pull Request wird der CI-Workflow ausgeführt.
+
+Dieser enthält:
+
+- Bauen des Projekts
+- Linter-Check des Codes
+- Ausführen aller Tests
+- Erstellung eines Testreports 
+- Erstellung eines Test-Coverage-Reports
+- Veröffentlichung beider Reports als HTML-Artefakte und als Pull Request Kommentare
+
+Der Workflow ist hier definiert:
+
+```bash
+.github/workflows/ci.yml
 ```
 
 ## Struktur der Anwendung
