@@ -14,16 +14,18 @@ Installation von Java 21, Docker, Git
 
 ```bash
 git clone https://github.com/psophis/REST-API-with-automated-testing.git
-cd banking-backend
+cd REST-API-with-automated-testing
 ```
 
 ### Konfiguration der Umgebungsvariablen
 
 Anlegen einer `.env` Datei im Projektverzeichnis:
 
-POSTGRES_DB=banking
-POSTGRES_USER=banking
-POSTGRES_PASSWORD=lokales-passwort
+```bash
+DB_URL=jdbc:postgresql://localhost:5432/banking
+DB_USERNAME=banking
+DB_PASSWORD=lokales-passwort
+```
 
 ### PostgreSQL starten
 
@@ -134,7 +136,7 @@ Contract-Tests eines bestimmten Moduls ausführen (bspw. `Client`):
 
 ## Continuous-Integration-Pipeline
 
-Bei jedem Push und jedem Pull Request wird der CI-Workflow ausgeführt.
+Bei jedem Push auf einen Pull Request und dem Öffnen eines neuen Pull Requests wird der CI-Workflow ausgeführt.
 
 Dieser enthält:
 
