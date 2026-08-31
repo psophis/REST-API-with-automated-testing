@@ -3,7 +3,8 @@ package com.bank.client.persistence
 import com.bank.client.domain.Client
 import com.bank.client.domain.ClientAddress
 import com.bank.client.domain.ClientName
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringBootConfiguration
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -12,10 +13,21 @@ import org.springframework.boot.persistence.autoconfigure.EntityScan
 import org.springframework.context.annotation.Import
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.util.UUID
 import kotlin.test.Test
 
-@DataJpaTest
+@DataJpaTest(
+    properties = [
+        "spring.jpa.hibernate.ddl-auto=validate",
+        "spring.flyway.enabled=true",
+    ],
+)
+@Testcontainers
 @Import(ClientRepositoryImpl::class)
 @ContextConfiguration(classes = [ClientRepositoryIntegrationTest.JpaTestConfig::class])
 class ClientRepositoryIntegrationTest {
@@ -38,7 +50,7 @@ class ClientRepositoryIntegrationTest {
 
         val loaded = clientRepository.getClientById(client.id)
 
-        Assertions.assertThat(loaded).isEqualTo(client)
+        assertThat(loaded).isEqualTo(client)
     }
 
     @Test
@@ -48,15 +60,15 @@ class ClientRepositoryIntegrationTest {
 
         clientRepository.deleteClientById(client.id)
 
-        Assertions.assertThat(clientRepository.getClientById(client.id)).isNull()
-        Assertions.assertThat(clientJpaRepository.findById(client.id)).isEmpty
+        assertThat(clientRepository.getClientById(client.id)).isNull()
+        assertThat(clientJpaRepository.findById(client.id)).isEmpty
     }
 
     @Test
     fun `should throw when client does not exist`() {
         val clientId = "missing-client"
 
-        org.junit.jupiter.api.Assertions.assertThrows(NoSuchElementException::class.java) {
+        assertThrows(NoSuchElementException::class.java) {
             clientRepository.deleteClientById(clientId)
         }
     }
@@ -69,7 +81,7 @@ class ClientRepositoryIntegrationTest {
 
         val result = clientRepository.updateClient(updatedClient)
 
-        Assertions.assertThat(result).isEqualTo(updatedClient)
+        assertThat(result).isEqualTo(updatedClient)
     }
 
     private fun client(
@@ -81,4 +93,18 @@ class ClientRepositoryIntegrationTest {
         name = name,
         address = address,
     )
+
+    companion object {
+        @Container
+        @JvmStatic
+        val postgres = PostgreSQLContainer("postgres:17-alpine")
+
+        @JvmStatic
+        @DynamicPropertySource
+        fun postgresProperties(registry: DynamicPropertyRegistry) {
+            registry.add("spring.datasource.url", postgres::getJdbcUrl)
+            registry.add("spring.datasource.username", postgres::getUsername)
+            registry.add("spring.datasource.password", postgres::getPassword)
+        }
+    }
 }
